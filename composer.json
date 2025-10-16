@@ -1,0 +1,15 @@
+{
+    "name": "xavnte/core",
+    "description": "Core library for Xavnte projects",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eduardo Luz",
+            "email": "xavante@eduardo-luz.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    }
+}
