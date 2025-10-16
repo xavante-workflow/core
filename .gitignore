@@ -1,0 +1,9 @@
+vendor
+.env
+.env.*.local
+*.log
+*.cache
+
+
+.vscode
+.idea
