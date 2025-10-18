@@ -22,17 +22,37 @@ class StatesFactoryTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testStatesContainerCreationUsingStateInstances()
+    public static function providerTestStatesContainerCreationUsingStateInstances() {
+
+        return [
+            [[['id' => 'state1', 'name' => 'State 1']], 1],
+            [ [['id' => 'state2', 'name' => 'State 2']], 1 ],
+
+            [[ ['id' => 'state1', 'name' => 'State 1'],
+              ['id' => 'state2', 'name' => 'State 2'],
+              ['id' => 'state3', 'name' => 'State 3']], 3
+            ]
+
+        ];
+    }
+
+    /**
+     * @dataProvider providerTestStatesContainerCreationUsingStateInstances
+     */
+    public function testStatesContainerCreationUsingStateInstances(array $statesData, int $count)
     {
-        $state1 = StateFactory::createFromArray(['id' => 'state1', 'name' => 'State 1']);
-        $state2 = StateFactory::createFromArray(['id' => 'state2', 'name' => 'State 2']);
-
-        $statesData = [$state1, $state2];
-
         $statesContainer = StatesFactory::createFromArray($statesData);
-        $this->assertCount(2, $statesContainer->toArray());
-        $this->assertSame($state1, $statesContainer->getById('state1'));
-        $this->assertSame($state2, $statesContainer->getById('state2'));
+
+        $this->assertCount($count, $statesContainer->toArray());
+        
+        foreach ($statesData as $stateData) {
+            $this->assertTrue($statesContainer->hasId($stateData['id']));
+            $state = $statesContainer->getById($stateData['id']);
+            $this->assertIsObject($state);
+            $this->assertSame($stateData['id'], (string) $state->id);
+            $this->assertSame($stateData['name'], (string) $state->name);
+        }   
+
     }
 
 

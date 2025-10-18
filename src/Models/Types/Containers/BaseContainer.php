@@ -107,4 +107,9 @@ abstract class BaseContainer implements Iterator
         $this->rewind();
     }
 
+
+    public function hasId(string $id): bool
+    {
+        return $this->getById($id) !== null;
+    }
 }

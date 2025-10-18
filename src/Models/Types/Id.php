@@ -6,7 +6,7 @@ class Id
 {
     public readonly string $id;
 
-    public function __construct(?string $id)
+    public function __construct(?string $id = null)
     {
         if ($id === null || $id === '') {
             $id = $this->generateUniqueId();
