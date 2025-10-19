@@ -1,0 +1,57 @@
+digraph SimpleApproval {
+  rankdir=LR;
+  labelloc="t";
+  label="Simple Approval - State Machine";
+  fontsize=12;
+
+  node [shape=box, style="rounded,filled", fillcolor="#F8F9FB", color="#B0BEC5", fontname="Arial"];
+  edge [fontname="Arial", color="#607D8B", arrowsize=0.8];
+
+  start [shape=point, width=0.2];
+
+  Draft [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="2">
+        <TR><TD><B>Draft</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / initContext()</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  PendingApproval [
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="2">
+        <TR><TD><B>PendingApproval</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / assignReviewer()</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / audit('leaving PendingApproval')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Approved [
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="2">
+        <TR><TD><B>Approved</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / notifyRequester('approved')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Rejected [
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="2">
+        <TR><TD><B>Rejected</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / notifyRequester('rejected')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  start -> Draft;
+
+  Draft -> PendingApproval [label="submit(requestId)"];
+
+  PendingApproval -> Approved [label="approve [user.role == 'manager'] / runTasks('onApprove')"];
+  PendingApproval -> Rejected [label="reject / runTasks('onReject')"];
+}
