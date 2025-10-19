@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Models\Domain;
 
+use Xavante\Models\Domain\State;
 use Xavante\Models\Factories\StateFactory;
 class StateTest extends \PHPUnit\Framework\TestCase
 {
@@ -24,5 +25,20 @@ class StateTest extends \PHPUnit\Framework\TestCase
         $id = (string) $state->id;
         $this->assertNotEmpty($id);
         $this->assertEquals($stateData['name'], (string) $state->name);
+    }
+
+    public function testStateJsonSerialization()
+    {
+        $stateData = ['id' => 'state1', 'name' => 'State 1'];
+
+        $state = StateFactory::createFromArray($stateData);
+
+        $json = $state->jsonSerialize();
+        $this->assertJson($json);
+        $this->assertIsString($json);
+
+        $decoded = State::jsonUnserialize($json);
+        $this->assertEquals($stateData['id'], (string) $decoded->id);
+        $this->assertEquals($stateData['name'], (string) $decoded->name);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Models\Factories;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Xavante\Models\Factories\StatesFactory;
 use Xavante\Models\Factories\StateFactory;
 
@@ -36,9 +37,7 @@ class StatesFactoryTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    /**
-     * @dataProvider providerTestStatesContainerCreationUsingStateInstances
-     */
+    #[DataProvider('providerTestStatesContainerCreationUsingStateInstances')]
     public function testStatesContainerCreationUsingStateInstances(array $statesData, int $count)
     {
         $statesContainer = StatesFactory::createFromArray($statesData);

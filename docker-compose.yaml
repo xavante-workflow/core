@@ -6,3 +6,8 @@ services:
             dockerfile: docker/Dockerfile
         volumes: 
             - ".:/app"
+        tmpfs:
+            - /tmp:size=1G,uid=1000,gid=1000
+        environment:
+            - COMPOSER_HOME=/tmp/composer
+            - COMPOSER_CACHE_DIR=/tmp/composer/cache

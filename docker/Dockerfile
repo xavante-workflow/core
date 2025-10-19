@@ -15,7 +15,8 @@ RUN apk update \
         php82-json  php82-curl \
        php82-ctype php82-openssl \
        php82-sodium libsodium libsodium-dev \
-    && rm -f /var/cache/apk/*
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/*
 
 RUN sed -i 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' /etc/php82/php.ini
 RUN ln -s /usr/bin/php82 /usr/bin/php
@@ -30,7 +31,13 @@ RUN chmod 755 /app/docker/run.sh
 # Install Composer:
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer 
 
-RUN composer install --no-scripts
+# Set Composer environment variables for better temp space handling
+ENV COMPOSER_HOME=/tmp/composer
+ENV COMPOSER_CACHE_DIR=/tmp/composer/cache
+
+RUN composer install --no-scripts --no-dev --optimize-autoloader \
+    && rm -rf /tmp/composer/cache/* \
+    && rm -rf /root/.composer/cache/*
 
 
 # Run as user as apache:
