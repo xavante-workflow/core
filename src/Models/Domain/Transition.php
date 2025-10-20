@@ -4,6 +4,7 @@ namespace Xavante\Models\Domain;
 
 use Xavante\Models\Types\Id;
 use Xavante\Models\Types\Name;
+use Xavante\Models\Types\Containers\Conditions;
 
 /**
  * Class Transition
@@ -38,6 +39,15 @@ class Transition implements \JsonSerializable
 
 
     /**
+     * @var Conditions
+     * The conditions that must be met for the transition to occur.
+     */
+    protected Conditions $conditions;
+
+
+
+
+    /**
      * @param string|null $id
      * @param string $name
      * @param string $fromStateId
@@ -49,6 +59,7 @@ class Transition implements \JsonSerializable
         $this->name = new Name($name);
         $this->fromStateId = new Id($fromStateId);
         $this->toStateId = new Id($toStateId);
+        $this->conditions = new Conditions();
     }
 
     /**
@@ -85,6 +96,17 @@ class Transition implements \JsonSerializable
     public function getToStateId(): string
     {
         return $this->toStateId->id;
+    }
+
+
+    /**
+     * @param Condition $condition
+     * @return $this
+     */
+    public function addCondition(Condition $condition): self
+    {
+        $this->conditions->addItem($condition);
+        return $this;
     }
 
 
