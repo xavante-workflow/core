@@ -4,6 +4,7 @@ namespace Xavante\Models\Domain;
 
 use Xavante\Actions\Actionable;
 use Xavante\Models\Fixtures\HasWorkflowAccess;
+use Xavante\Models\Runtime\Process;
 use Xavante\Models\Types\Containers\Actions;
 use Xavante\Models\Types\Id;
 use Xavante\Models\Types\Name;
@@ -54,6 +55,7 @@ class Event implements \JsonSerializable
     {
         if ($this->getWorkflowInstance() !== null) {
             $action->setWorkflow($this->getWorkflowInstance());
+            $action->setCaller($this);
         }        
         $this->actions->addItem($action);        
     }
@@ -71,10 +73,10 @@ class Event implements \JsonSerializable
         ]);
     }
 
-    public function trigger(mixed ...$args): void
+    public function trigger(Process $process, mixed ...$args): void
     {
         foreach ($this->actions->toArray() as $action) {
-            $action->execute(...$args);
+            $action->execute($process, ...$args);
         }
     }
 };

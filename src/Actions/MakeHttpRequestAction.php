@@ -6,8 +6,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
+use Xavante\Models\Runtime\Process;
 
-class MakeHttpRequest extends ActionBase 
+class MakeHttpRequestAction extends ActionBase 
 {
     private Client $client;
     private array $config = [];
@@ -18,6 +19,7 @@ class MakeHttpRequest extends ActionBase
 
     public function __construct(?Client $client = null)
     {
+        parent::__construct();
         $this->client = $client ?? new Client();
     }
 
@@ -162,8 +164,10 @@ class MakeHttpRequest extends ActionBase
      * 
      * @param mixed ...$args Additional runtime parameters that can override configuration
      */
-    public function execute(mixed ...$args): void
+    public function execute(Process $process, mixed ...$args): void
     {
+        parent::execute($process, ...$args);
+
         $runtimeConfig = $args[0] ?? [];
         
         // Merge runtime configuration with stored configuration

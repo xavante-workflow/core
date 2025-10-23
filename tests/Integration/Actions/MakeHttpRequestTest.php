@@ -9,11 +9,11 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use PHPUnit\Framework\TestCase;
-use Xavante\Actions\MakeHttpRequest;
+use Xavante\Actions\MakeHttpRequestAction;
 
 class MakeHttpRequestTest extends TestCase
 {
-    private MakeHttpRequest $action;
+    private MakeHttpRequestAction $action;
     private MockHandler $mockHandler;
     private Client $mockClient;
 
@@ -27,7 +27,7 @@ class MakeHttpRequestTest extends TestCase
         $this->mockClient = new Client(['handler' => $handlerStack]);
         
         // Create the action with the mocked client
-        $this->action = new MakeHttpRequest($this->mockClient);
+        $this->action = new MakeHttpRequestAction($this->mockClient);
     }
 
     public function testBasicGetRequest()
