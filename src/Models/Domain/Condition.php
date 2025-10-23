@@ -25,9 +25,9 @@ class Condition implements \JsonSerializable
     /**
      * @var mixed
      */
-    public readonly mixed $value;
+    protected mixed $value;
 
-    public function __construct(string $variablePath, string $operator, mixed $value)
+    public function __construct(string $variablePath, string $operator, mixed $value=null)
     {
         $this->variablePath = $variablePath;
         $this->operator = $operator;
@@ -41,5 +41,15 @@ class Condition implements \JsonSerializable
             'operator' => $this->operator,
             'value' => $this->value,
         ]);
+    }
+
+    public function setValue(mixed $value): void
+    {
+        $this->value = $value;
+    }
+
+    public function getValue(): mixed
+    {
+        return $this->value;
     }
 }

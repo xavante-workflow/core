@@ -2,6 +2,7 @@
 
 namespace Xavante\Models\Domain;
 
+use Xavante\Models\Types\Containers\Events;
 use Xavante\Models\Types\Id;
 use Xavante\Models\Types\Containers\States;
 use Xavante\Models\Types\Containers\Transitions;
@@ -14,12 +15,25 @@ use Xavante\Models\Types\Name;
  *
  * Represents a workflow consisting mostly of states and transitions.
  */
-class Workflow
+class Workflow implements \JsonSerializable
 {
     /**
      * @var Id
      */
     public readonly Id $id;
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => (string) $this->id,
+            'name' => (string) $this->name,
+            'description' => (string) $this->description,
+            'states' => $this->states->jsonSerialize(),
+            'transitions' => $this->transitions->jsonSerialize(),
+            'variables' => $this->variables->jsonSerialize(),
+            'events' => $this->events->jsonSerialize(),
+        ];
+    }
 
     /**
      * @var Name
@@ -49,6 +63,11 @@ class Workflow
      */
     public readonly Variables $variables;
 
+    /**
+     * List of events in the workflow
+     * @var Events
+     */
+    public readonly Events $events;
 
 
     /**
@@ -62,6 +81,7 @@ class Workflow
         $this->states = new States();
         $this->transitions = new Transitions();
         $this->variables = new Variables();
+        $this->events = new Events();
     }
 
     /**
@@ -87,4 +107,15 @@ class Workflow
     {
         $this->variables->addItem($variable);
     }
+
+    /**
+     * @param Event $event
+     */
+    public function addEvent(Event $event): void
+    {
+        $event->setWorkflow($this);
+        $this->events->addItem($event);
+    }
+
+
 }

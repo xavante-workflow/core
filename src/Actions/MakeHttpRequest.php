@@ -7,7 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 
-class MakeHttpRequest implements Actionable
+class MakeHttpRequest extends ActionBase 
 {
     private Client $client;
     private array $config = [];

@@ -7,4 +7,5 @@ use Xavante\Models\Domain\Condition;
 class Conditions extends BaseContainer
 {
     protected string $type = Condition::class;
+
 }

@@ -5,7 +5,7 @@ namespace Xavante\Models\Types\Containers;
 
 use Iterator;
 
-abstract class BaseContainer implements Iterator
+abstract class BaseContainer implements Iterator, \JsonSerializable
 {
     protected array $items = [];
     protected int $position = 0;
@@ -112,4 +112,18 @@ abstract class BaseContainer implements Iterator
     {
         return $this->getById($id) !== null;
     }
+
+    public function jsonSerialize(): string
+    {
+        $serialized = [];
+        foreach ($this->items as $item) {
+            if (method_exists($item, 'jsonSerialize')) {
+                $serialized[] = json_decode($item->jsonSerialize(), true);
+            } else {
+                $serialized[] = $item;
+            }
+        }
+        
+        return json_encode($serialized);
+    }    
 }
