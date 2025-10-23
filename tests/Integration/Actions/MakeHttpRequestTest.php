@@ -10,12 +10,15 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use PHPUnit\Framework\TestCase;
 use Xavante\Actions\MakeHttpRequestAction;
+use Xavante\Models\Runtime\Process;
+use Xavante\Models\Domain\Workflow;
 
 class MakeHttpRequestTest extends TestCase
 {
     private MakeHttpRequestAction $action;
     private MockHandler $mockHandler;
     private Client $mockClient;
+    private Process $mockProcess;
 
     protected function setUp(): void
     {
@@ -28,6 +31,9 @@ class MakeHttpRequestTest extends TestCase
         
         // Create the action with the mocked client
         $this->action = new MakeHttpRequestAction($this->mockClient);
+        
+        // Create a mock Process for testing
+        $this->mockProcess = $this->createMock(Process::class);
     }
 
     public function testBasicGetRequest()
@@ -40,7 +46,7 @@ class MakeHttpRequestTest extends TestCase
             'method' => 'GET'
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(200, $this->action->getStatusCode());
@@ -65,7 +71,7 @@ class MakeHttpRequestTest extends TestCase
             ]
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(201, $this->action->getStatusCode());
@@ -86,7 +92,7 @@ class MakeHttpRequestTest extends TestCase
             ]
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals('Form submitted successfully', $this->action->getResponseBody());
@@ -106,7 +112,7 @@ class MakeHttpRequestTest extends TestCase
             ]
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(['results' => [], 'total' => 0], $this->action->getResponseJson());
@@ -122,7 +128,7 @@ class MakeHttpRequestTest extends TestCase
             'auth' => ['username', 'password', 'basic']
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(['authenticated' => true], $this->action->getResponseJson());
@@ -141,7 +147,7 @@ class MakeHttpRequestTest extends TestCase
             ]
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(['custom_header_received' => true], $this->action->getResponseJson());
@@ -158,7 +164,7 @@ class MakeHttpRequestTest extends TestCase
             'connect_timeout' => 10
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
     }
@@ -173,7 +179,7 @@ class MakeHttpRequestTest extends TestCase
             'verify' => false
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
     }
@@ -191,7 +197,7 @@ class MakeHttpRequestTest extends TestCase
             ]
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(['updated' => true], $this->action->getResponseJson());
@@ -206,7 +212,7 @@ class MakeHttpRequestTest extends TestCase
             'method' => 'DELETE'
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(204, $this->action->getStatusCode());
@@ -229,7 +235,7 @@ class MakeHttpRequestTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('HTTP request failed: Connection timeout');
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
     }
 
     public function testHttpErrorResponse()
@@ -241,7 +247,7 @@ class MakeHttpRequestTest extends TestCase
             'method' => 'GET'
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful()); // Request succeeded, but returned 404
         $this->assertEquals(404, $this->action->getStatusCode());
@@ -259,7 +265,7 @@ class MakeHttpRequestTest extends TestCase
         ]);
 
         // Override at execution time
-        $this->action->execute([
+        $this->action->execute($this->mockProcess, [
             'url' => 'https://api.example.com/overridden',
             'method' => 'POST',
             'json' => ['override' => true]
@@ -278,7 +284,7 @@ class MakeHttpRequestTest extends TestCase
             'dry_run' => true
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->isDryRun());
         $this->assertTrue($this->action->wasSuccessful());
@@ -296,7 +302,7 @@ class MakeHttpRequestTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('URL is required for HTTP request');
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
     }
 
     public function testInvalidConfigurationThrowsException()
@@ -318,7 +324,7 @@ class MakeHttpRequestTest extends TestCase
             'referer' => 'https://example.com/workflow'
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
     }
@@ -338,7 +344,7 @@ class MakeHttpRequestTest extends TestCase
             ]
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(['raw_body_received' => true], $this->action->getResponseJson());
@@ -353,7 +359,7 @@ class MakeHttpRequestTest extends TestCase
             'url' => 'https://api.example.com/first',
             'method' => 'GET'
         ]);
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
         
         $this->assertEquals(['first' => true], $this->action->getResponseJson());
 
@@ -365,7 +371,7 @@ class MakeHttpRequestTest extends TestCase
             'method' => 'POST',
             'json' => ['data' => 'second request']
         ]);
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
         
         $this->assertEquals(201, $this->action->getStatusCode());
         $this->assertEquals(['second' => true], $this->action->getResponseJson());
@@ -386,7 +392,7 @@ class MakeHttpRequestTest extends TestCase
             'method' => 'GET'
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $headers = $this->action->getResponseHeaders();
         $this->assertEquals($responseHeaders, $headers);
@@ -406,7 +412,7 @@ class MakeHttpRequestTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('HTTP request failed:');
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
     }
 
     public function testHttpErrorsConfigurationDisabled()
@@ -420,7 +426,7 @@ class MakeHttpRequestTest extends TestCase
             'http_errors' => false // Disable exception throwing on HTTP errors
         ]);
 
-        $this->action->execute();
+        $this->action->execute($this->mockProcess);
 
         $this->assertTrue($this->action->wasSuccessful());
         $this->assertEquals(500, $this->action->getStatusCode());
