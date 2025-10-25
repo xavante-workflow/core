@@ -16,6 +16,7 @@ class MakeHttpRequestAction extends ActionBase
     private ?ResponseInterface $lastResponse = null;
     private ?string $lastError = null;
     private bool $dryRun = false;
+    private array $expectedSimulationResults = [];
 
     public function __construct(?Client $client = null)
     {
@@ -51,6 +52,9 @@ class MakeHttpRequestAction extends ActionBase
     public function configure(mixed ...$args): void
     {
         $config = $args[0] ?? [];
+
+        // In case of dry_run, we can accept expected simulation results
+        $this->expectedSimulationResults = $args[1] ?? [];
         
         if (!is_array($config)) {
             throw new \InvalidArgumentException('Configuration must be an array');
@@ -202,26 +206,45 @@ class MakeHttpRequestAction extends ActionBase
 
     private function simulateRequest(string $method, string $url): void
     {
+        $expected = $this->expectedSimulationResults;
         // Create a mock response for dry run mode
-        $this->lastResponse = new class implements ResponseInterface {
-            public function getStatusCode(): int { return 200; }
+        $this->lastResponse = new class($expected, $method, $url) implements ResponseInterface {
+            private $expected;
+            private $method;
+            private $url;
+            public function __construct($expected, $method, $url) {
+                $this->expected = $expected;
+                $this->method = $method;
+                $this->url = $url;
+            }
+            public function getStatusCode(): int { return $this->expected['status_code'] ?? 200; }
             public function withStatus($code, $reasonPhrase = ''): ResponseInterface { return $this; }
-            public function getReasonPhrase(): string { return 'OK'; }
+            public function getReasonPhrase(): string { return $this->expected['reason_phrase'] ?? 'OK'; }
             public function getProtocolVersion(): string { return '1.1'; }
             public function withProtocolVersion($version): ResponseInterface { return $this; }
-            public function getHeaders(): array { return ['Content-Type' => ['application/json']]; }
+            public function getHeaders(): array { return $this->expected['headers'] ?? ['Content-Type' => ['application/json']]; }
             public function hasHeader($name): bool { return $name === 'Content-Type'; }
-            public function getHeader($name): array { return $name === 'Content-Type' ? ['application/json'] : []; }
-            public function getHeaderLine($name): string { return $name === 'Content-Type' ? 'application/json' : ''; }
+            public function getHeader($name): array { 
+                return $this->expected['headers'][$name] ?? [];
+            }
+            public function getHeaderLine($name): string { 
+                return $this->expected['headers'][$name][0] ?? '';
+            }
             public function withHeader($name, $value): ResponseInterface { return $this; }
             public function withAddedHeader($name, $value): ResponseInterface { return $this; }
             public function withoutHeader($name): ResponseInterface { return $this; }
-            public function getBody(): \Psr\Http\Message\StreamInterface { 
-                return new class implements \Psr\Http\Message\StreamInterface {
-                    public function __toString(): string { return '{"status": "dry_run_simulation"}'; }
+            public function getBody() : \Psr\Http\Message\StreamInterface   {
+                return new class($this->expected) implements \Psr\Http\Message\StreamInterface  {
+                    private $expected;
+                    public function __construct($expected) {
+                        $this->expected = $expected;
+                    }
+                    public function __toString(): string { return $this->expected['contents'] ?? '{"status": "dry_run_simulation"}'; }
                     public function close(): void {}
                     public function detach() { return null; }
-                    public function getSize(): ?int { return 31; }
+                    public function getSize()  : ?int { 
+                        return $this->expected['contents'] ? strlen($this->expected['contents']) : 31; 
+                    }
                     public function tell(): int { return 0; }
                     public function eof(): bool { return false; }
                     public function isSeekable(): bool { return false; }

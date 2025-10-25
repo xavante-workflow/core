@@ -23,7 +23,13 @@ $actionRequestAssignReviewer->configure([
     'method' => 'POST',
     'url' => 'https://www.google.com/assign-reviewer',
     'headers' => ['Content-Type' => 'application/json'],
-    'body' => json_encode(['documentId' => '{{process.documentId}}'])
+    'body' => json_encode(['documentId' => '{{process.documentId}}']),
+    'dry_run' => true
+],[
+    'status_code' => 403,
+    'reason_phrase' => 'Forbidden',
+    'headers' => ['Content-Type' => ['application/json']],
+    'contents' => '{"error": "Reviewer assignment failed in dry run mode"}'
 ]);
 
 $actionAuditExitPendingApproval = new SetVariableValueAction(
@@ -82,12 +88,52 @@ $transitionDraftToPendingApproval->addCondition(
 $wf->addTransition($transitionDraftToPendingApproval);
 
 
+
+
 $transitionPendingApprovalToApproved = new Transition(
     'id:approve',
     'Approve',
     'id:pending-approval',
     'id:approved'
 );
+
+
+
+
+
+
+$eventApprove = new Event('id:approve_document', 'Approve Document');
+
+$actionSetStatusApproved = new SetVariableValueAction(
+    'Set Document Status to Approved',
+    'document.status',
+    'approved'
+);
+
+$wf->addEvent($eventApprove);
+$eventApprove->addAction($actionSetStatusApproved);
+
+
+
+$conditionApproveDocument = new Condition(
+    'document.status',
+    'equals',
+    'approved'
+);
+
+$transitionPendingApprovalToApproved->addCondition($conditionApproveDocument);
+
+$conditionUserRoleIsManager = new Condition(
+    'user.role',
+    'equals',
+    'manager'
+);
+$transitionPendingApprovalToApproved->addCondition($conditionUserRoleIsManager);
+
+
+
+
+
 
 $transitionPendingApprovalToApproved->addCondition(
     new Condition(

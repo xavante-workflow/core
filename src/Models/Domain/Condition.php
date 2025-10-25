@@ -52,4 +52,9 @@ class Condition implements \JsonSerializable
     {
         return $this->value;
     }
+
+    public function getVariablePath(): string
+    {
+        return $this->variablePath;
+    }
 }

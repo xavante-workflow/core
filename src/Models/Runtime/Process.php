@@ -116,4 +116,9 @@ class Process
         $this->activeStatesIds = $activeStatesIds;
         $this->addToHistory('active_states_set', "Active states set to: " . implode(', ', $activeStatesIds));
     }
+
+    public function getVariableValue(string $variableId) : mixed
+    {
+        return $this->variables[$variableId] ?? null;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Xavante\Runtime;
 
+use Xavante\Conditions\Operators\Equals;
 use Xavante\Models\Domain\Condition;
 use Xavante\Models\Domain\Workflow;
 use Xavante\Models\Runtime\Process;
@@ -61,26 +62,24 @@ class Processor
             $workflow = $instance->getWorkflow();
             $transitions = $workflow->transitions->getBySourceStateId($stateId);
 
-
-            // print_r($transitions); exit;
-
-
-
             foreach ($transitions as $transition) {
                 // Evaluate conditions (not implemented here)
-                $canTakeTransition = true; // Placeholder for condition evaluation
+                $canTakeTransition = false; // Placeholder for condition evaluation
 
                 $conditions = $transition->getConditions();
                 foreach ($conditions->toArray() as $condition) {
                     // Evaluate each condition (not implemented)
                     // If all conditions are met, set $canTakeTransition to true
                     $assessment = $this->assessCondition($condition, $instance);
-                    if (!$assessment) {
+
+                    if ($canTakeTransition === true && !$assessment) {
+                        // One condition failed, cannot take transition
                         $canTakeTransition = false;
                         break;
+                    } elseif ($assessment) {
+                        $canTakeTransition = true;
                     } 
                 }
-
 
                 if ($canTakeTransition) {
                     $listTransitionsTaken[] = $transition;
@@ -88,6 +87,7 @@ class Processor
             }
             
         }
+
 
 
         $newStatesIds = [];
@@ -117,7 +117,9 @@ class Processor
             
         }
 
-        $instance->setActiveStatesIds($newStatesIds);
+        if (count($newStatesIds) > 0) {
+            $instance->setActiveStatesIds($newStatesIds);
+        }
 
         // print_r($listTransitionsTaken); exit;
 
@@ -157,11 +159,34 @@ class Processor
     protected function assessCondition(Condition $condition, Process $instance) : bool
     {
 
+        
+        $operatorClass = match ($condition->operator) {
+            'equals' => Equals::class,
+
+            // $this->assessEqualsCondition($condition, $instance),
+            // Add other operators as needed
+            default => false,
+        };
+
+
+        if ($operatorClass === false) {
+            throw new \InvalidArgumentException("Unsupported operator '{$condition->operator}' in condition");
+        }
+
+        $operator = new $operatorClass();
+        $expectedValue = $condition->getValue();
+        $actualValue = $this->getActualVariableValue($instance, $condition->getVariablePath());
+        return $operator->evaluate($expectedValue, $actualValue);
+    }
 
 
 
-        // Placeholder for condition assessment logic
-        return true;
+    protected function getActualVariableValue(Process $instance, string $variablePath) : mixed
+    {
+        // Implementation to retrieve the actual variable value from the process instance
+        // based on the variable path.
+
+        return $instance->getVariableValue($variablePath);
     }
 
 }
