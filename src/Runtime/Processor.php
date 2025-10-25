@@ -2,7 +2,8 @@
 
 namespace Xavante\Runtime;
 
-use Xavante\Conditions\Operators\Equals;
+use Xavante\Conditions\Operators\OperatorConstants;
+use Xavante\Conditions\Operators\OperatorRegistry;
 use Xavante\Models\Domain\Condition;
 use Xavante\Models\Domain\Workflow;
 use Xavante\Models\Runtime\Process;
@@ -22,6 +23,12 @@ use Xavante\Models\Runtime\Process;
  *    - Performing any transition actions.
  *    - Entering the target state (running entry actions).
  * 5. Updating the workflow instance's active states and variables as needed.
+ * 
+ * Condition Assessment:
+ * - Uses OperatorRegistry to dynamically resolve and execute operators
+ * - Supports all operators defined in the system (comparison, logical, string, date)
+ * - Operators are referenced by name and resolved at runtime for flexibility
+ * - Use OperatorConstants for type-safe operator names when creating conditions
  */
 class Processor
 {
@@ -63,22 +70,23 @@ class Processor
             $transitions = $workflow->transitions->getBySourceStateId($stateId);
 
             foreach ($transitions as $transition) {
-                // Evaluate conditions (not implemented here)
-                $canTakeTransition = false; // Placeholder for condition evaluation
-
+                // Evaluate ALL conditions for this transition (AND logic)
+                $canTakeTransition = true; // Assume true, fail if any condition fails
+                
                 $conditions = $transition->getConditions();
                 foreach ($conditions->toArray() as $condition) {
-                    // Evaluate each condition (not implemented)
-                    // If all conditions are met, set $canTakeTransition to true
                     $assessment = $this->assessCondition($condition, $instance);
-
-                    if ($canTakeTransition === true && !$assessment) {
+                    
+                    if (!$assessment) {
                         // One condition failed, cannot take transition
                         $canTakeTransition = false;
-                        break;
-                    } elseif ($assessment) {
-                        $canTakeTransition = true;
-                    } 
+                        break; // No need to check remaining conditions
+                    }
+                }
+
+                // If no conditions exist, transition can be taken
+                if (count($conditions->toArray()) === 0) {
+                    $canTakeTransition = true;
                 }
 
                 if ($canTakeTransition) {
@@ -156,27 +164,31 @@ class Processor
     }
 
 
+    /**
+     * Assesses a single condition against the current process instance.
+     * 
+     * Uses OperatorRegistry to dynamically resolve operators by name, supporting
+     * all available operators: comparison (equals, greater_than, etc.), 
+     * logical (and, or, not), string (contains, regex, etc.), and date operators.
+     * 
+     * @param Condition $condition The condition to evaluate
+     * @param Process $instance The process instance providing variable context
+     * @return bool True if condition is met, false otherwise
+     * @throws \InvalidArgumentException If operator is not registered
+     */
     protected function assessCondition(Condition $condition, Process $instance) : bool
     {
-
-        
-        $operatorClass = match ($condition->operator) {
-            'equals' => Equals::class,
-
-            // $this->assessEqualsCondition($condition, $instance),
-            // Add other operators as needed
-            default => false,
-        };
-
-
-        if ($operatorClass === false) {
+        // Use OperatorRegistry to get the operator instance
+        if (!OperatorRegistry::has($condition->operator)) {
             throw new \InvalidArgumentException("Unsupported operator '{$condition->operator}' in condition");
         }
 
-        $operator = new $operatorClass();
+        $operator = OperatorRegistry::get($condition->operator);
         $expectedValue = $condition->getValue();
         $actualValue = $this->getActualVariableValue($instance, $condition->getVariablePath());
-        return $operator->evaluate($expectedValue, $actualValue);
+        
+        // Evaluate: actualValue operator expectedValue (e.g., 85 >= 80)
+        return $operator->evaluate($actualValue, $expectedValue);
     }
 
 
