@@ -156,7 +156,7 @@ class ExecutionSimpleWorkflowBaseTest extends TestCase
 
         // Trigger the 'approve_document' event to set document.status = 'approved'
         // This executes the SetVariableValueAction associated with the event
-        $eventId = 'id:document_approved';
+        $eventId = 'id:approve_document';
         self::$processor->triggerEvent(self::$process, $eventId);
 
         // Set the user.role variable to 'manager' to satisfy the second transition condition
@@ -228,7 +228,7 @@ class ExecutionSimpleWorkflowBaseTest extends TestCase
         
         // Trigger the 'approve_document' event while in draft state
         // This should NOT cause any state transitions since the transition conditions aren't met
-        $eventId = 'id:document_approved';
+        $eventId = 'id:approve_document';
         self::$processor->triggerEvent(self::$process, $eventId);
 
 
@@ -262,7 +262,7 @@ class ExecutionSimpleWorkflowBaseTest extends TestCase
         // ========================================
 
         // Trigger another inappropriate event to further test state isolation
-        $eventId = 'id:document_approved';
+        $eventId = 'id:approve_document';
         self::$processor->triggerEvent(self::$process, $eventId);
 
         // Process the workflow - this should NOT cause any transitions
