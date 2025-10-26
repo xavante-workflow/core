@@ -29,6 +29,12 @@ use Xavante\Models\Runtime\Process;
  * - Supports all operators defined in the system (comparison, logical, string, date)
  * - Operators are referenced by name and resolved at runtime for flexibility
  * - Use OperatorConstants for type-safe operator names when creating conditions
+ * 
+ * Deterministic Transition Selection:
+ * - When multiple transitions from a state have satisfied conditions, selects deterministically
+ * - Priority: Transitions with more conditions (more specific) take precedence
+ * - If condition counts are equal, first defined transition is selected
+ * - Ensures predictable workflow execution without ambiguous state transitions
  */
 class Processor
 {
@@ -51,6 +57,15 @@ class Processor
         return new Process($workflow, $configuration);
     }
 
+    /**
+     * Process workflow instance by evaluating and executing state transitions.
+     * 
+     * Implements deterministic transition selection: when multiple transitions
+     * from a state could be taken, selects the one with the most conditions
+     * (most specific). If condition counts are equal, takes the first defined.
+     * 
+     * @param Process $instance The workflow process instance to advance
+     */
     public function process(Process $instance) : void
     {
 
@@ -69,6 +84,9 @@ class Processor
             $workflow = $instance->getWorkflow();
             $transitions = $workflow->transitions->getBySourceStateId($stateId);
 
+            // Collect all valid transitions with their condition counts for deterministic selection
+            $validTransitions = [];
+            
             foreach ($transitions as $transition) {
                 // Evaluate ALL conditions for this transition (AND logic)
                 $canTakeTransition = true; // Assume true, fail if any condition fails
@@ -90,8 +108,24 @@ class Processor
                 }
 
                 if ($canTakeTransition) {
-                    $listTransitionsTaken[] = $transition;
+                    $validTransitions[] = [
+                        'transition' => $transition,
+                        'conditionCount' => count($conditions->toArray())
+                    ];
                 }
+            }
+            
+            // Deterministic selection: prioritize transitions with more conditions (more specific)
+            // If multiple transitions have same number of conditions, take the first one
+            if (!empty($validTransitions)) {
+                // Sort by condition count (descending), then by original order
+                usort($validTransitions, function($a, $b) {
+                    return $b['conditionCount'] <=> $a['conditionCount'];
+                });
+                
+                // Take only the highest priority transition (most conditions)
+                $selectedTransition = $validTransitions[0]['transition'];
+                $listTransitionsTaken[] = $selectedTransition;
             }
             
         }
