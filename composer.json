@@ -1,6 +1,6 @@
 {
-    "name": "xavnte/core",
-    "description": "Core library for Xavnte projects",
+    "name": "xavante/core",
+    "description": "Core library for Xavante projects",
     "type": "library",
     "license": "MIT",
     "authors": [
