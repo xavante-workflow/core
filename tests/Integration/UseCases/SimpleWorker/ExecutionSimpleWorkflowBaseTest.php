@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Integration\UseCases;
+namespace Tests\Integration\UseCases\SimpleWorker;
 
 
 use PHPUnit\Framework\TestCase;
