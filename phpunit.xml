@@ -10,13 +10,14 @@
     
     <testsuites>
         <testsuite name="Simple Workflow Tests">
-            <directory>tests/Integration/UseCases/SimpleWorkflow</directory>
+            <directory>tests/Integration/UseCases/SimpleWorker</directory>
         </testsuite>
         <testsuite name="Unit Tests">
             <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="Integration Tests">
             <directory>tests/Integration</directory>
+            <exclude>tests/Integration/UseCases/SimpleWorker</exclude>
         </testsuite>
     </testsuites>
     

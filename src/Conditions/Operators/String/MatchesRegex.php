@@ -27,14 +27,76 @@ class MatchesRegex implements OperatorInterface
         $text = (string) $value1;
         $pattern = (string) $value2;
         
-        // Suppress warnings and check for errors
-        $result = @preg_match($pattern, $text);
+        // Pre-validate the regex pattern to avoid any preg_match warnings
+        if (!$this->isValidRegexPattern($pattern)) {
+            return false;
+        }
         
-        // Check for preg_match errors (invalid regex)
+        // Execute the regex match
+        $result = preg_match($pattern, $text);
+        
+        // Check for execution errors
         if ($result === false || preg_last_error() !== PREG_NO_ERROR) {
             return false;
         }
         
         return $result === 1;
+    }
+    
+    /**
+     * Validates if a string is a valid regex pattern without executing it.
+     * This prevents preg_match warnings from being generated.
+     */
+    private function isValidRegexPattern(string $pattern): bool
+    {
+        // Empty patterns are invalid
+        if (empty($pattern)) {
+            return false;
+        }
+        
+        // Must have at least 3 characters (delimiter + content + delimiter)
+        if (strlen($pattern) < 3) {
+            return false;
+        }
+        
+        $firstChar = $pattern[0];
+        $lastChar = $pattern[strlen($pattern) - 1];
+        
+        // Check for valid delimiters (non-alphanumeric, non-backslash, non-NUL)
+        if (ctype_alnum($firstChar) || $firstChar === '\\' || $firstChar === "\0") {
+            return false;
+        }
+        
+        // For most delimiters, first and last character should match
+        // Exception: brackets, parentheses, braces, angle brackets
+        $delimiterPairs = [
+            '(' => ')',
+            '[' => ']',
+            '{' => '}',
+            '<' => '>'
+        ];
+        
+        if (isset($delimiterPairs[$firstChar])) {
+            if ($lastChar !== $delimiterPairs[$firstChar]) {
+                return false;
+            }
+        } else {
+            if ($firstChar !== $lastChar) {
+                return false;
+            }
+        }
+        
+        // Additional validation: check for unclosed character classes
+        $content = substr($pattern, 1, -1);
+        if (strpos($content, '[') !== false) {
+            // Simple check for unclosed brackets
+            $openBrackets = substr_count($content, '[');
+            $closeBrackets = substr_count($content, ']');
+            if ($openBrackets > $closeBrackets) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
