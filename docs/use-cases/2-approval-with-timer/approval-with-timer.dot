@@ -1,0 +1,228 @@
+digraph ApprovalWithTimers {
+  rankdir=TB;
+  labelloc="t";
+  label=<<TABLE BORDER="0">
+    <TR><TD><FONT POINT-SIZE="16"><B>Approval With Timer Workflow</B></FONT></TD></TR>
+    <TR><TD><FONT POINT-SIZE="12">Xavante Workflow Engine - Comprehensive State Machine</FONT></TD></TR>
+    <TR><TD><FONT POINT-SIZE="10">Timer Variables: sla.hours(48h) | reminder.hours(24h) | expiry.days(7d)</FONT></TD></TR>
+  </TABLE>>;
+  fontsize=12;
+  compound=true;
+
+  // Node styles
+  node [fontname="Arial", fontsize=10];
+  edge [fontname="Arial", fontsize=9, color="#607D8B", arrowsize=0.8];
+
+  // Start node
+  start [shape=point, width=0.3, color="#4CAF50"];
+
+  // States with detailed actions
+  Draft [
+    shape=box, style="rounded,filled", fillcolor="#E8F5E8", color="#4CAF50",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLPADDING="4" CELLSPACING="0">
+        <TR><TD BGCOLOR="#4CAF50"><FONT COLOR="white"><B>Draft</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Initial State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">• Request composition</TD></TR>
+        <TR><TD ALIGN="LEFT">• No timer behavior</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  PendingApproval [
+    shape=box, style="rounded,filled", fillcolor="#FFF3E0", color="#FF9800",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLPADDING="4" CELLSPACING="0">
+        <TR><TD BGCOLOR="#FF9800"><FONT COLOR="white"><B>PendingApproval</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>Entry Actions:</B></TD></TR>
+        <TR><TD ALIGN="LEFT">• assignReviewer() HTTP</TD></TR>
+        <TR><TD ALIGN="LEFT">• scheduleTimers()</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>Exit Actions:</B></TD></TR>
+        <TR><TD ALIGN="LEFT">• cancelTimers()</TD></TR>
+        <TR><TD ALIGN="LEFT">• auditExit()</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>Timers:</B></TD></TR>
+        <TR><TD ALIGN="LEFT">⏰ Reminder: {{reminder.hours}}h</TD></TR>
+        <TR><TD ALIGN="LEFT">⚠️ Escalate: {{sla.hours}}h</TD></TR>
+        <TR><TD ALIGN="LEFT">💀 Expire: {{expiry.days}}d</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Escalated [
+    shape=box, style="rounded,filled", fillcolor="#FFE0B2", color="#F57C00",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLPADDING="4" CELLSPACING="0">
+        <TR><TD BGCOLOR="#F57C00"><FONT COLOR="white"><B>Escalated</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><B>Entry Actions:</B></TD></TR>
+        <TR><TD ALIGN="LEFT">• notifyEscalation() HTTP</TD></TR>
+        <TR><TD ALIGN="LEFT">• reassignToBackup()</TD></TR>
+        <TR><TD ALIGN="LEFT"><B>Active Timer:</B></TD></TR>
+        <TR><TD ALIGN="LEFT">💀 Expire: continues</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Approved [
+    shape=box, style="rounded,filled", fillcolor="#E8F5E8", color="#2E7D32",
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLPADDING="4" CELLSPACING="0">
+        <TR><TD BGCOLOR="#2E7D32"><FONT COLOR="white"><B>Approved</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Terminal State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">✅ Success completion</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Rejected [
+    shape=box, style="rounded,filled", fillcolor="#FFEBEE", color="#C62828",
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLPADDING="4" CELLSPACING="0">
+        <TR><TD BGCOLOR="#C62828"><FONT COLOR="white"><B>Rejected</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Terminal State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">❌ Explicit rejection</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  AutoExpired [
+    shape=box, style="rounded,filled", fillcolor="#F3E5F5", color="#7B1FA2",
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLPADDING="4" CELLSPACING="0">
+        <TR><TD BGCOLOR="#7B1FA2"><FONT COLOR="white"><B>AutoExpired</B></FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Terminal State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">💀 Deadline exceeded</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  // User events (solid lines)
+  start -> Draft [color="#4CAF50", penwidth=2];
+  
+  Draft -> PendingApproval [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>submit</B></TD></TR>
+      <TR><TD>request.status='submitted'</TD></TR>
+    </TABLE>>,
+    color="#2196F3", penwidth=2
+  ];
+
+  PendingApproval -> Approved [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>approve</B></TD></TR>
+      <TR><TD>request.status='approved'</TD></TR>
+    </TABLE>>,
+    color="#4CAF50", penwidth=2
+  ];
+
+  PendingApproval -> Rejected [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>reject</B></TD></TR>
+      <TR><TD>request.status='rejected'</TD></TR>
+    </TABLE>>,
+    color="#F44336", penwidth=2
+  ];
+
+  Escalated -> Approved [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>approve</B></TD></TR>
+      <TR><TD>backup approver</TD></TR>
+    </TABLE>>,
+    color="#4CAF50", penwidth=2
+  ];
+
+  Escalated -> Rejected [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>reject</B></TD></TR>
+      <TR><TD>backup approver</TD></TR>
+    </TABLE>>,
+    color="#F44336", penwidth=2
+  ];
+
+  // Timer events (dashed lines)
+  PendingApproval -> PendingApproval [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>reminderTick</B></TD></TR>
+      <TR><TD><I>every {{reminder.hours}}h</I></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">stays in state</FONT></TD></TR>
+    </TABLE>>,
+    style=dashed, color="#9C27B0", penwidth=1.5
+  ];
+
+  PendingApproval -> Escalated [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>escalate</B></TD></TR>
+      <TR><TD><I>at {{sla.hours}}h</I></TD></TR>
+      <TR><TD>request.status='escalated'</TD></TR>
+    </TABLE>>,
+    style=dashed, color="#FF5722", penwidth=2
+  ];
+
+  PendingApproval -> AutoExpired [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>expire</B></TD></TR>
+      <TR><TD><I>at {{expiry.days}}d</I></TD></TR>
+      <TR><TD>request.status='expired'</TD></TR>
+    </TABLE>>,
+    style=dashed, color="#795548", penwidth=2
+  ];
+
+  Escalated -> AutoExpired [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>expire</B></TD></TR>
+      <TR><TD><I>hard deadline</I></TD></TR>
+      <TR><TD>request.status='expired'</TD></TR>
+    </TABLE>>,
+    style=dashed, color="#795548", penwidth=2
+  ];
+
+  // Legend
+  subgraph cluster_legend {
+    label="Legend";
+    style=filled;
+    fillcolor="#FAFAFA";
+    fontsize=10;
+
+    legend_user [
+      shape=plaintext,
+      label=<
+        <TABLE BORDER="0" CELLPADDING="2">
+          <TR><TD ALIGN="LEFT">━━━ User Events</TD></TR>
+          <TR><TD ALIGN="LEFT">┅┅┅ Timer Events</TD></TR>
+          <TR><TD ALIGN="LEFT">⏰ Reminder (no state change)</TD></TR>
+          <TR><TD ALIGN="LEFT">⚠️ Escalation (SLA breach)</TD></TR>
+          <TR><TD ALIGN="LEFT">💀 Expiration (hard deadline)</TD></TR>
+          <TR><TD ALIGN="LEFT">🔄 Priority: expire - escalate - remind</TD></TR>
+        </TABLE>
+      >
+    ];
+  }
+
+  // Variables box
+  subgraph cluster_variables {
+    label="Key Variables";
+    style=filled;
+    fillcolor="#F5F5F5";
+    fontsize=10;
+
+    variables [
+      shape=plaintext,
+      label=<
+        <TABLE BORDER="0" CELLPADDING="2">
+          <TR><TD ALIGN="LEFT"><B>Configuration:</B></TD></TR>
+          <TR><TD ALIGN="LEFT">• approver, backupApprover</TD></TR>
+          <TR><TD ALIGN="LEFT">• amount, current.approver</TD></TR>
+          <TR><TD ALIGN="LEFT"><B>Timers:</B></TD></TR>
+          <TR><TD ALIGN="LEFT">• sla.hours (default: 48)</TD></TR>
+          <TR><TD ALIGN="LEFT">• reminder.hours (default: 24)</TD></TR>
+          <TR><TD ALIGN="LEFT">• expiry.days (default: 7)</TD></TR>
+          <TR><TD ALIGN="LEFT"><B>Status:</B></TD></TR>
+          <TR><TD ALIGN="LEFT">• timers.scheduled/cancelled</TD></TR>
+          <TR><TD ALIGN="LEFT">• audit.log</TD></TR>
+        </TABLE>
+      >
+    ];
+  }
+}
