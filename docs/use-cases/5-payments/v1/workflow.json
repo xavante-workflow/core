@@ -1,0 +1,1062 @@
+{
+  "_id": {
+    "$oid": "65a1b1c2d3e4f50611223399"
+  },
+  "name": "Payment Intent Workflow",
+  "description": "Comprehensive payment processing workflow with risk evaluation, 3DS authentication, and manual capture support.",
+  "ownerId": "019992f8-f3df-7036-8c46-ff2ef54be0e9",
+  "version": 1,
+  "status": "active",
+  "initialStateId": "state:created",
+  "variablesSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Payment intent identifier"
+      },
+      "amount": {
+        "type": "integer",
+        "description": "Payment amount in smallest currency unit (e.g., cents)"
+      },
+      "currency": {
+        "type": "string",
+        "description": "Three-letter ISO currency code"
+      },
+      "customer_id": {
+        "type": "string",
+        "description": "Customer identifier"
+      },
+      "payment_method_id": {
+        "type": "string",
+        "description": "Payment method identifier"
+      },
+      "payment_method_type": {
+        "type": "string",
+        "enum": ["card", "bank_account", "wallet"],
+        "description": "Type of payment method"
+      },
+      "capture_method": {
+        "type": "string",
+        "enum": ["automatic", "manual"],
+        "default": "automatic",
+        "description": "When to capture funds"
+      },
+      "status": {
+        "type": "string",
+        "description": "Current payment status"
+      },
+      "client_secret": {
+        "type": "string",
+        "description": "Client-side authentication token"
+      },
+      "latest_charge_id": {
+        "type": "string",
+        "description": "Most recent charge identifier"
+      },
+      "amount_capturable": {
+        "type": "integer",
+        "default": 0,
+        "description": "Amount available for capture"
+      },
+      "amount_captured": {
+        "type": "integer",
+        "default": 0,
+        "description": "Amount already captured"
+      },
+      "attempt_count": {
+        "type": "integer",
+        "default": 0,
+        "description": "Number of authorization attempts"
+      },
+      "max_attempts": {
+        "type": "integer",
+        "default": 3,
+        "description": "Maximum allowed attempts"
+      },
+      "risk_level": {
+        "type": "string",
+        "enum": ["low", "medium", "high"],
+        "description": "Risk assessment result"
+      },
+      "requires_3ds": {
+        "type": "boolean",
+        "default": false,
+        "description": "Whether 3DS authentication is required"
+      },
+      "next_action_type": {
+        "type": "string",
+        "description": "Type of action required from customer"
+      },
+      "next_action_payload": {
+        "type": "object",
+        "description": "Data for customer action (e.g., 3DS redirect URL)"
+      },
+      "error_code": {
+        "type": "string",
+        "description": "Last error code encountered"
+      },
+      "error_message": {
+        "type": "string",
+        "description": "Last error message"
+      },
+      "cancellation_reason": {
+        "type": "string",
+        "description": "Reason for payment cancellation"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Payment intent creation timestamp"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Last update timestamp"
+      }
+    },
+    "required": ["id", "amount", "currency"]
+  },
+  "states": {
+    "state:created": {
+      "id": "state:created",
+      "name": "Created",
+      "type": "initial",
+      "entryTasks": [
+        "task:generate-client-secret",
+        "task:set-status-created",
+        "task:publish-webhook-created"
+      ],
+      "exitTasks": []
+    },
+    "state:requires-payment-method": {
+      "id": "state:requires-payment-method",
+      "name": "RequiresPaymentMethod",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-requires-payment-method",
+        "task:clear-next-action",
+        "task:publish-webhook-requires-pm"
+      ],
+      "exitTasks": [
+        "task:validate-payment-method"
+      ]
+    },
+    "state:requires-confirmation": {
+      "id": "state:requires-confirmation",
+      "name": "RequiresConfirmation",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-requires-confirmation",
+        "task:publish-webhook-pm-attached"
+      ],
+      "exitTasks": [
+        "task:prepare-auth-request"
+      ]
+    },
+    "state:risk-evaluation": {
+      "id": "state:risk-evaluation",
+      "name": "RiskEvaluation",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-risk-evaluation",
+        "task:call-risk-api",
+        "task:schedule-risk-timeout"
+      ],
+      "exitTasks": [
+        "task:clear-risk-timeout"
+      ]
+    },
+    "state:requires-action": {
+      "id": "state:requires-action",
+      "name": "RequiresAction",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-requires-action",
+        "task:set-next-action-3ds",
+        "task:schedule-action-timeout",
+        "task:publish-webhook-requires-action"
+      ],
+      "exitTasks": [
+        "task:clear-action-timeout",
+        "task:clear-next-action"
+      ]
+    },
+    "state:processing": {
+      "id": "state:processing",
+      "name": "Processing",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-processing",
+        "task:increment-attempt",
+        "task:call-auth-api",
+        "task:schedule-auth-timeout",
+        "task:publish-webhook-processing"
+      ],
+      "exitTasks": [
+        "task:clear-auth-timeout"
+      ]
+    },
+    "state:requires-capture": {
+      "id": "state:requires-capture",
+      "name": "RequiresCapture",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-requires-capture",
+        "task:set-amount-capturable",
+        "task:schedule-capture-timeout",
+        "task:publish-webhook-requires-capture"
+      ],
+      "exitTasks": [
+        "task:clear-capture-timeout"
+      ]
+    },
+    "state:capturing": {
+      "id": "state:capturing",
+      "name": "Capturing",
+      "type": "intermediate",
+      "entryTasks": [
+        "task:set-status-capturing",
+        "task:call-capture-api",
+        "task:schedule-capture-exec-timeout"
+      ],
+      "exitTasks": [
+        "task:clear-capture-exec-timeout"
+      ]
+    },
+    "state:succeeded": {
+      "id": "state:succeeded",
+      "name": "Succeeded",
+      "type": "final",
+      "entryTasks": [
+        "task:set-status-succeeded",
+        "task:record-ledger-entry",
+        "task:publish-webhook-succeeded",
+        "task:notify-merchant-success"
+      ],
+      "exitTasks": []
+    },
+    "state:canceled": {
+      "id": "state:canceled",
+      "name": "Canceled",
+      "type": "final",
+      "entryTasks": [
+        "task:set-status-canceled",
+        "task:void-authorization",
+        "task:publish-webhook-canceled",
+        "task:notify-merchant-canceled"
+      ],
+      "exitTasks": []
+    },
+    "state:failed": {
+      "id": "state:failed",
+      "name": "Failed",
+      "type": "final",
+      "entryTasks": [
+        "task:set-status-failed",
+        "task:set-error-max-attempts",
+        "task:publish-webhook-failed",
+        "task:notify-merchant-failed"
+      ],
+      "exitTasks": []
+    }
+  },
+  "transitions": [
+    {
+      "id": "transition:create-to-requires-pm",
+      "name": "CreateToRequiresPaymentMethod",
+      "sourceState": "state:created",
+      "targetState": "state:requires-payment-method",
+      "eventName": "create_intent",
+      "guards": [],
+      "tasks": []
+    },
+    {
+      "id": "transition:attach-payment-method",
+      "name": "AttachPaymentMethod",
+      "sourceState": "state:requires-payment-method",
+      "targetState": "state:requires-confirmation",
+      "eventName": "attach_payment_method",
+      "guards": [
+        {
+          "variable": "event.payment_method_id",
+          "operator": "exists"
+        },
+        {
+          "variable": "event.payment_method_type",
+          "operator": "in",
+          "value": ["card", "bank_account", "wallet"]
+        }
+      ],
+      "tasks": [
+        "task:set-payment-method-id",
+        "task:set-payment-method-type",
+        "task:update-timestamp"
+      ]
+    },
+    {
+      "id": "transition:confirm-intent",
+      "name": "ConfirmIntent",
+      "sourceState": "state:requires-confirmation",
+      "targetState": "state:risk-evaluation",
+      "eventName": "confirm_intent",
+      "guards": [
+        {
+          "variable": "payment_method_id",
+          "operator": "exists"
+        }
+      ],
+      "tasks": []
+    },
+    {
+      "id": "transition:risk-approved",
+      "name": "RiskApproved",
+      "sourceState": "state:risk-evaluation",
+      "targetState": "state:processing",
+      "eventName": "risk_approved",
+      "guards": [
+        {
+          "variable": "risk_level",
+          "operator": "equals",
+          "value": "low"
+        },
+        {
+          "variable": "requires_3ds",
+          "operator": "equals",
+          "value": false
+        }
+      ],
+      "tasks": []
+    },
+    {
+      "id": "transition:risk-approved-with-3ds",
+      "name": "RiskApprovedWith3DS",
+      "sourceState": "state:risk-evaluation",
+      "targetState": "state:requires-action",
+      "eventName": "risk_approved_with_3ds",
+      "guards": [
+        {
+          "variable": "risk_level",
+          "operator": "equals",
+          "value": "medium"
+        },
+        {
+          "variable": "requires_3ds",
+          "operator": "equals",
+          "value": true
+        }
+      ],
+      "tasks": []
+    },
+    {
+      "id": "transition:risk-blocked",
+      "name": "RiskBlocked",
+      "sourceState": "state:risk-evaluation",
+      "targetState": "state:canceled",
+      "eventName": "risk_blocked",
+      "guards": [
+        {
+          "variable": "risk_level",
+          "operator": "equals",
+          "value": "high"
+        }
+      ],
+      "tasks": [
+        "task:set-cancellation-reason-risk"
+      ]
+    },
+    {
+      "id": "transition:authentication-succeeded",
+      "name": "AuthenticationSucceeded",
+      "sourceState": "state:requires-action",
+      "targetState": "state:processing",
+      "eventName": "authentication_succeeded",
+      "guards": [
+        {
+          "variable": "event.3ds_result",
+          "operator": "equals",
+          "value": "authenticated"
+        }
+      ],
+      "tasks": []
+    },
+    {
+      "id": "transition:authentication-failed-retry",
+      "name": "AuthenticationFailedRetry",
+      "sourceState": "state:requires-action",
+      "targetState": "state:requires-payment-method",
+      "eventName": "authentication_failed",
+      "guards": [
+        {
+          "variable": "event.3ds_result",
+          "operator": "equals",
+          "value": "failed"
+        },
+        {
+          "variable": "attempt_count",
+          "operator": "less_than",
+          "value": "max_attempts"
+        }
+      ],
+      "tasks": [
+        "task:set-error-authentication-failed"
+      ]
+    },
+    {
+      "id": "transition:auth-succeeded-manual-capture",
+      "name": "AuthSucceededManualCapture",
+      "sourceState": "state:processing",
+      "targetState": "state:requires-capture",
+      "eventName": "authorization_succeeded",
+      "guards": [
+        {
+          "variable": "capture_method",
+          "operator": "equals",
+          "value": "manual"
+        }
+      ],
+      "tasks": [
+        "task:set-latest-charge-id",
+        "task:set-amount-capturable-from-auth"
+      ]
+    },
+    {
+      "id": "transition:auth-succeeded-auto-capture",
+      "name": "AuthSucceededAutoCapture",
+      "sourceState": "state:processing",
+      "targetState": "state:succeeded",
+      "eventName": "authorization_succeeded",
+      "guards": [
+        {
+          "variable": "capture_method",
+          "operator": "equals",
+          "value": "automatic"
+        }
+      ],
+      "tasks": [
+        "task:set-latest-charge-id",
+        "task:set-amount-captured-full"
+      ]
+    },
+    {
+      "id": "transition:auth-failed-retry",
+      "name": "AuthFailedRetry",
+      "sourceState": "state:processing",
+      "targetState": "state:requires-payment-method",
+      "eventName": "authorization_failed",
+      "guards": [
+        {
+          "variable": "event.error_code",
+          "operator": "in",
+          "value": ["card_declined", "insufficient_funds"]
+        },
+        {
+          "variable": "attempt_count",
+          "operator": "less_than",
+          "value": "max_attempts"
+        }
+      ],
+      "tasks": [
+        "task:set-error-from-event",
+        "task:clear-payment-method"
+      ]
+    },
+    {
+      "id": "transition:auth-failed-terminal",
+      "name": "AuthFailedTerminal",
+      "sourceState": "state:processing",
+      "targetState": "state:failed",
+      "eventName": "authorization_failed",
+      "guards": [
+        {
+          "operator": "or",
+          "conditions": [
+            {
+              "variable": "attempt_count",
+              "operator": "greater_than_or_equal",
+              "value": "max_attempts"
+            },
+            {
+              "variable": "event.error_code",
+              "operator": "in",
+              "value": ["do_not_honor", "invalid_card", "stolen_card"]
+            }
+          ]
+        }
+      ],
+      "tasks": [
+        "task:set-error-from-event"
+      ]
+    },
+    {
+      "id": "transition:capture-request",
+      "name": "CaptureRequest",
+      "sourceState": "state:requires-capture",
+      "targetState": "state:capturing",
+      "eventName": "capture",
+      "guards": [
+        {
+          "variable": "event.capture_amount",
+          "operator": "greater_than",
+          "value": 0
+        },
+        {
+          "variable": "event.capture_amount",
+          "operator": "less_than_or_equal",
+          "value": "amount_capturable"
+        }
+      ],
+      "tasks": [
+        "task:set-capture-amount"
+      ]
+    },
+    {
+      "id": "transition:capture-succeeded",
+      "name": "CaptureSucceeded",
+      "sourceState": "state:capturing",
+      "targetState": "state:succeeded",
+      "eventName": "capture_succeeded",
+      "guards": [],
+      "tasks": [
+        "task:set-amount-captured-from-event"
+      ]
+    },
+    {
+      "id": "transition:capture-failed-retry",
+      "name": "CaptureFailedRetry",
+      "sourceState": "state:capturing",
+      "targetState": "state:requires-capture",
+      "eventName": "capture_failed",
+      "guards": [
+        {
+          "variable": "event.error_code",
+          "operator": "in",
+          "value": ["network_error", "temporary_failure"]
+        }
+      ],
+      "tasks": [
+        "task:set-error-from-event"
+      ]
+    },
+    {
+      "id": "transition:capture-failed-terminal",
+      "name": "CaptureFailedTerminal",
+      "sourceState": "state:capturing",
+      "targetState": "state:canceled",
+      "eventName": "capture_failed",
+      "guards": [
+        {
+          "variable": "event.error_code",
+          "operator": "equals",
+          "value": "authorization_expired"
+        }
+      ],
+      "tasks": [
+        "task:set-error-from-event",
+        "task:set-cancellation-reason-expired"
+      ]
+    },
+    {
+      "id": "transition:cancel-from-requires-pm",
+      "name": "CancelFromRequiresPM",
+      "sourceState": "state:requires-payment-method",
+      "targetState": "state:canceled",
+      "eventName": "cancel",
+      "guards": [],
+      "tasks": [
+        "task:set-cancellation-reason-from-event"
+      ]
+    },
+    {
+      "id": "transition:cancel-from-requires-confirmation",
+      "name": "CancelFromRequiresConfirmation",
+      "sourceState": "state:requires-confirmation",
+      "targetState": "state:canceled",
+      "eventName": "cancel",
+      "guards": [],
+      "tasks": [
+        "task:set-cancellation-reason-from-event"
+      ]
+    },
+    {
+      "id": "transition:cancel-from-requires-action",
+      "name": "CancelFromRequiresAction",
+      "sourceState": "state:requires-action",
+      "targetState": "state:canceled",
+      "eventName": "cancel",
+      "guards": [],
+      "tasks": [
+        "task:set-cancellation-reason-from-event"
+      ]
+    },
+    {
+      "id": "transition:cancel-from-processing",
+      "name": "CancelFromProcessing",
+      "sourceState": "state:processing",
+      "targetState": "state:canceled",
+      "eventName": "cancel",
+      "guards": [],
+      "tasks": [
+        "task:set-cancellation-reason-from-event"
+      ]
+    },
+    {
+      "id": "transition:cancel-from-requires-capture",
+      "name": "CancelFromRequiresCapture",
+      "sourceState": "state:requires-capture",
+      "targetState": "state:canceled",
+      "eventName": "cancel",
+      "guards": [],
+      "tasks": [
+        "task:set-cancellation-reason-from-event"
+      ]
+    },
+    {
+      "id": "transition:timeout-risk-evaluation",
+      "name": "TimeoutRiskEvaluation",
+      "sourceState": "state:risk-evaluation",
+      "targetState": "state:canceled",
+      "eventName": "timeout",
+      "guards": [
+        {
+          "variable": "event.timeout_type",
+          "operator": "equals",
+          "value": "risk_timeout"
+        }
+      ],
+      "tasks": [
+        "task:set-cancellation-reason-timeout"
+      ]
+    },
+    {
+      "id": "transition:timeout-customer-action",
+      "name": "TimeoutCustomerAction",
+      "sourceState": "state:requires-action",
+      "targetState": "state:canceled",
+      "eventName": "timeout",
+      "guards": [
+        {
+          "variable": "event.timeout_type",
+          "operator": "equals",
+          "value": "action_timeout"
+        }
+      ],
+      "tasks": [
+        "task:set-cancellation-reason-timeout"
+      ]
+    },
+    {
+      "id": "transition:timeout-authorization",
+      "name": "TimeoutAuthorization",
+      "sourceState": "state:processing",
+      "targetState": "state:canceled",
+      "eventName": "timeout",
+      "guards": [
+        {
+          "variable": "event.timeout_type",
+          "operator": "equals",
+          "value": "auth_timeout"
+        }
+      ],
+      "tasks": [
+        "task:set-cancellation-reason-timeout"
+      ]
+    },
+    {
+      "id": "transition:timeout-capture-window",
+      "name": "TimeoutCaptureWindow",
+      "sourceState": "state:requires-capture",
+      "targetState": "state:canceled",
+      "eventName": "timeout",
+      "guards": [
+        {
+          "variable": "event.timeout_type",
+          "operator": "equals",
+          "value": "capture_timeout"
+        }
+      ],
+      "tasks": [
+        "task:set-cancellation-reason-timeout"
+      ]
+    }
+  ],
+  "tasks": {
+    "task:generate-client-secret": {
+      "id": "task:generate-client-secret",
+      "name": "Generate Client Secret",
+      "handler": "Xavante\\Actions\\GenerateClientSecretAction",
+      "retryPolicy": {
+        "maxAttempts": 1
+      }
+    },
+    "task:set-status-created": {
+      "id": "task:set-status-created",
+      "name": "Set Status to Created",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "created"
+      }
+    },
+    "task:set-status-requires-payment-method": {
+      "id": "task:set-status-requires-payment-method",
+      "name": "Set Status to Requires Payment Method",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "requires_payment_method"
+      }
+    },
+    "task:set-status-requires-confirmation": {
+      "id": "task:set-status-requires-confirmation",
+      "name": "Set Status to Requires Confirmation",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "requires_confirmation"
+      }
+    },
+    "task:set-status-risk-evaluation": {
+      "id": "task:set-status-risk-evaluation",
+      "name": "Set Status to Risk Evaluation",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "risk_evaluation"
+      }
+    },
+    "task:set-status-requires-action": {
+      "id": "task:set-status-requires-action",
+      "name": "Set Status to Requires Action",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "requires_action"
+      }
+    },
+    "task:set-status-processing": {
+      "id": "task:set-status-processing",
+      "name": "Set Status to Processing",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "processing"
+      }
+    },
+    "task:set-status-requires-capture": {
+      "id": "task:set-status-requires-capture",
+      "name": "Set Status to Requires Capture",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "requires_capture"
+      }
+    },
+    "task:set-status-capturing": {
+      "id": "task:set-status-capturing",
+      "name": "Set Status to Capturing",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "capturing"
+      }
+    },
+    "task:set-status-succeeded": {
+      "id": "task:set-status-succeeded",
+      "name": "Set Status to Succeeded",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "succeeded"
+      }
+    },
+    "task:set-status-canceled": {
+      "id": "task:set-status-canceled",
+      "name": "Set Status to Canceled",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "canceled"
+      }
+    },
+    "task:set-status-failed": {
+      "id": "task:set-status-failed",
+      "name": "Set Status to Failed",
+      "handler": "Xavante\\Actions\\SetVariableValueAction",
+      "params": {
+        "variable": "status",
+        "value": "failed"
+      }
+    },
+    "task:call-risk-api": {
+      "id": "task:call-risk-api",
+      "name": "Call Risk Evaluation API",
+      "handler": "Xavante\\Actions\\MakeHttpRequestAction",
+      "params": {
+        "url": "/api/risk/evaluate",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "amount": "{{amount}}",
+          "currency": "{{currency}}",
+          "customer_id": "{{customer_id}}",
+          "payment_method_type": "{{payment_method_type}}"
+        }
+      },
+      "retryPolicy": {
+        "maxAttempts": 3,
+        "backoffStrategy": "exponential"
+      }
+    },
+    "task:call-auth-api": {
+      "id": "task:call-auth-api",
+      "name": "Call Authorization API",
+      "handler": "Xavante\\Actions\\MakeHttpRequestAction",
+      "params": {
+        "url": "/api/payments/authorize",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "amount": "{{amount}}",
+          "currency": "{{currency}}",
+          "payment_method_id": "{{payment_method_id}}",
+          "capture_method": "{{capture_method}}"
+        }
+      },
+      "retryPolicy": {
+        "maxAttempts": 3,
+        "backoffStrategy": "exponential"
+      }
+    },
+    "task:call-capture-api": {
+      "id": "task:call-capture-api",
+      "name": "Call Capture API",
+      "handler": "Xavante\\Actions\\MakeHttpRequestAction",
+      "params": {
+        "url": "/api/payments/capture",
+        "method": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "charge_id": "{{latest_charge_id}}",
+          "amount": "{{capture_amount}}"
+        }
+      },
+      "retryPolicy": {
+        "maxAttempts": 3,
+        "backoffStrategy": "exponential"
+      }
+    },
+    "task:publish-webhook-created": {
+      "id": "task:publish-webhook-created",
+      "name": "Publish Payment Intent Created Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.created",
+        "payload": {
+          "id": "{{id}}",
+          "amount": "{{amount}}",
+          "currency": "{{currency}}",
+          "status": "{{status}}"
+        }
+      }
+    },
+    "task:publish-webhook-requires-pm": {
+      "id": "task:publish-webhook-requires-pm",
+      "name": "Publish Requires Payment Method Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.requires_payment_method",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "client_secret": "{{client_secret}}"
+        }
+      }
+    },
+    "task:publish-webhook-pm-attached": {
+      "id": "task:publish-webhook-pm-attached",
+      "name": "Publish Payment Method Attached Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.payment_method_attached",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "payment_method_id": "{{payment_method_id}}"
+        }
+      }
+    },
+    "task:publish-webhook-requires-action": {
+      "id": "task:publish-webhook-requires-action",
+      "name": "Publish Requires Action Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.requires_action",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "next_action": {
+            "type": "{{next_action_type}}",
+            "payload": "{{next_action_payload}}"
+          }
+        }
+      }
+    },
+    "task:publish-webhook-processing": {
+      "id": "task:publish-webhook-processing",
+      "name": "Publish Processing Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.processing",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}"
+        }
+      }
+    },
+    "task:publish-webhook-requires-capture": {
+      "id": "task:publish-webhook-requires-capture",
+      "name": "Publish Requires Capture Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.requires_capture",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "amount_capturable": "{{amount_capturable}}"
+        }
+      }
+    },
+    "task:publish-webhook-succeeded": {
+      "id": "task:publish-webhook-succeeded",
+      "name": "Publish Succeeded Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.succeeded",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "amount_captured": "{{amount_captured}}",
+          "latest_charge_id": "{{latest_charge_id}}"
+        }
+      }
+    },
+    "task:publish-webhook-canceled": {
+      "id": "task:publish-webhook-canceled",
+      "name": "Publish Canceled Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.canceled",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "cancellation_reason": "{{cancellation_reason}}"
+        }
+      }
+    },
+    "task:publish-webhook-failed": {
+      "id": "task:publish-webhook-failed",
+      "name": "Publish Failed Webhook",
+      "handler": "Xavante\\Actions\\PublishWebhookAction",
+      "params": {
+        "event": "payment_intent.payment_failed",
+        "payload": {
+          "id": "{{id}}",
+          "status": "{{status}}",
+          "error_code": "{{error_code}}",
+          "error_message": "{{error_message}}"
+        }
+      }
+    },
+    "task:increment-attempt": {
+      "id": "task:increment-attempt",
+      "name": "Increment Attempt Count",
+      "handler": "Xavante\\Actions\\IncrementVariableAction",
+      "params": {
+        "variable": "attempt_count"
+      }
+    },
+    "task:record-ledger-entry": {
+      "id": "task:record-ledger-entry",
+      "name": "Record Ledger Entry",
+      "handler": "Xavante\\Actions\\RecordLedgerEntryAction",
+      "params": {
+        "type": "payment_captured",
+        "amount": "{{amount_captured}}",
+        "currency": "{{currency}}",
+        "charge_id": "{{latest_charge_id}}"
+      }
+    },
+    "task:notify-merchant-success": {
+      "id": "task:notify-merchant-success",
+      "name": "Notify Merchant of Success",
+      "handler": "Xavante\\Actions\\NotifyMerchantAction",
+      "params": {
+        "type": "payment_success",
+        "payment_intent_id": "{{id}}",
+        "amount": "{{amount_captured}}"
+      }
+    },
+    "task:notify-merchant-canceled": {
+      "id": "task:notify-merchant-canceled",
+      "name": "Notify Merchant of Cancellation",
+      "handler": "Xavante\\Actions\\NotifyMerchantAction",
+      "params": {
+        "type": "payment_canceled",
+        "payment_intent_id": "{{id}}",
+        "reason": "{{cancellation_reason}}"
+      }
+    },
+    "task:notify-merchant-failed": {
+      "id": "task:notify-merchant-failed",
+      "name": "Notify Merchant of Failure",
+      "handler": "Xavante\\Actions\\NotifyMerchantAction",
+      "params": {
+        "type": "payment_failed",
+        "payment_intent_id": "{{id}}",
+        "error_code": "{{error_code}}"
+      }
+    },
+    "task:void-authorization": {
+      "id": "task:void-authorization",
+      "name": "Void Authorization",
+      "handler": "Xavante\\Actions\\VoidAuthorizationAction",
+      "params": {
+        "charge_id": "{{latest_charge_id}}"
+      },
+      "condition": {
+        "variable": "latest_charge_id",
+        "operator": "exists"
+      }
+    }
+  },
+  "events": [
+    "create_intent",
+    "attach_payment_method",
+    "confirm_intent",
+    "risk_approved",
+    "risk_approved_with_3ds",
+    "risk_blocked",
+    "authentication_succeeded",
+    "authentication_failed",
+    "authorization_succeeded",
+    "authorization_failed",
+    "capture",
+    "capture_succeeded",
+    "capture_failed",
+    "cancel",
+    "timeout"
+  ],
+  "metadata": {
+    "category": "payments",
+    "tags": ["payment-processing", "3ds", "manual-capture", "risk-evaluation"],
+    "documentation": "docs/use-cases/5-payments/v1/README.01.md",
+    "diagram": "docs/use-cases/5-payments/v1/payment-intent.dot"
+  }
+}
