@@ -1,0 +1,951 @@
+{
+  "id": "payment_intent_v2",
+  "name": "Enhanced Payment Intent Workflow v2",
+  "version": "2.0.0",
+  "description": "Advanced payment processing workflow with multi-processor support, intelligent retry logic, and sophisticated compensation patterns",
+  "created_at": "2024-11-04T16:00:00Z",
+  "metadata": {
+    "use_case": "payment_processing",
+    "complexity": "high",
+    "features": [
+      "multi_processor_support",
+      "advanced_risk_assessment", 
+      "intelligent_retry_logic",
+      "partial_operations",
+      "compensation_patterns",
+      "real_time_monitoring"
+    ],
+    "api_integrations": [
+      "risk_assessment_api",
+      "authorization_api", 
+      "settlement_api",
+      "webhook_system",
+      "monitoring_api"
+    ]
+  },
+  "variables": {
+    "core_payment": {
+      "id": {
+        "type": "string",
+        "required": true,
+        "description": "Unique payment intent identifier"
+      },
+      "amount": {
+        "type": "integer", 
+        "required": true,
+        "description": "Payment amount in smallest currency unit (cents)"
+      },
+      "currency": {
+        "type": "string",
+        "required": true,
+        "pattern": "^[A-Z]{3}$",
+        "description": "ISO 4217 currency code"
+      },
+      "capture_method": {
+        "type": "string",
+        "enum": ["automatic", "manual", "intelligent"],
+        "default": "automatic",
+        "description": "Capture method for authorized payments"
+      }
+    },
+    "processor_management": {
+      "primary_processor": {
+        "type": "string",
+        "enum": ["stripe", "adyen", "square", "paypal", "braintree"],
+        "description": "Primary payment processor"
+      },
+      "current_processor": {
+        "type": "string",
+        "description": "Currently active processor"
+      },
+      "processor_attempts": {
+        "type": "object",
+        "description": "Track attempts per processor",
+        "properties": {
+          "stripe": {"type": "integer", "default": 0},
+          "adyen": {"type": "integer", "default": 0},
+          "square": {"type": "integer", "default": 0}
+        }
+      },
+      "fallback_processors": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "List of fallback processors"
+      },
+      "processor_routing_reason": {
+        "type": "string",
+        "description": "Reason for processor selection"
+      }
+    },
+    "risk_assessment": {
+      "risk_score": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "description": "ML-generated risk score"
+      },
+      "risk_level": {
+        "type": "string",
+        "enum": ["minimal", "low", "medium", "high", "critical"],
+        "description": "Risk level classification"
+      },
+      "risk_factors": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "Identified risk factors"
+      },
+      "ml_model_version": {
+        "type": "string",
+        "description": "Version of ML model used"
+      },
+      "regulatory_flags": {
+        "type": "array", 
+        "items": {"type": "string"},
+        "description": "Regulatory compliance flags"
+      },
+      "requires_3ds": {
+        "type": "boolean",
+        "default": false,
+        "description": "3D Secure authentication required"
+      }
+    },
+    "retry_management": {
+      "retry_count": {
+        "type": "integer",
+        "default": 0,
+        "description": "Number of retry attempts"
+      },
+      "max_retries": {
+        "type": "integer",
+        "default": 3,
+        "description": "Maximum retry attempts allowed"
+      },
+      "max_settlement_retries": {
+        "type": "integer", 
+        "default": 5,
+        "description": "Maximum settlement retry attempts"
+      },
+      "retry_strategy": {
+        "type": "string",
+        "enum": ["exponential", "linear", "custom"],
+        "default": "exponential",
+        "description": "Retry backoff strategy"
+      },
+      "last_error_type": {
+        "type": "string",
+        "description": "Type of last error encountered"
+      },
+      "backoff_multiplier": {
+        "type": "number",
+        "default": 2.0,
+        "description": "Exponential backoff multiplier"
+      }
+    },
+    "capture_management": {
+      "amount_capturable": {
+        "type": "integer",
+        "default": 0,
+        "description": "Amount available for capture"
+      },
+      "amount_captured": {
+        "type": "integer",
+        "default": 0,
+        "description": "Amount already captured"
+      },
+      "partial_captures": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "amount": {"type": "integer"},
+            "timestamp": {"type": "string"},
+            "description": {"type": "string"}
+          }
+        },
+        "description": "History of partial captures"
+      },
+      "capture_timeline": {
+        "type": "object",
+        "description": "Capture scheduling information"
+      },
+      "auto_capture_enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable automatic capture"
+      }
+    },
+    "compensation_tracking": {
+      "compensation_events": {
+        "type": "array",
+        "items": {"type": "object"},
+        "description": "Compensation events triggered"
+      },
+      "rollback_operations": {
+        "type": "array",
+        "items": {"type": "object"}, 
+        "description": "Rollback operations performed"
+      },
+      "recovery_actions": {
+        "type": "array",
+        "items": {"type": "object"},
+        "description": "Recovery actions taken"
+      },
+      "compensation_status": {
+        "type": "string",
+        "enum": ["none", "in_progress", "completed", "failed"],
+        "default": "none",
+        "description": "Status of compensation process"
+      }
+    },
+    "monitoring": {
+      "performance_metrics": {
+        "type": "object",
+        "description": "Performance tracking data"
+      },
+      "latency_measurements": {
+        "type": "object",
+        "description": "Latency measurements by operation"
+      },
+      "error_tracking": {
+        "type": "object",
+        "description": "Error tracking and categorization"
+      },
+      "audit_trail": {
+        "type": "array",
+        "items": {"type": "object"},
+        "description": "Complete audit trail of operations"
+      }
+    },
+    "payment_method": {
+      "validated": {
+        "type": "boolean",
+        "default": false,
+        "description": "Payment method validation status"
+      },
+      "type": {
+        "type": "string",
+        "enum": ["card", "bank_account", "digital_wallet"],
+        "description": "Payment method type"
+      }
+    },
+    "authorization_hold": {
+      "created": {
+        "type": "boolean", 
+        "default": false,
+        "description": "Authorization hold status"
+      },
+      "amount": {
+        "type": "integer",
+        "description": "Authorization hold amount"
+      }
+    },
+    "settlement": {
+      "confirmed": {
+        "type": "boolean",
+        "default": false,
+        "description": "Settlement confirmation status"
+      },
+      "processor_response": {
+        "type": "object",
+        "description": "Processor settlement response"
+      }
+    },
+    "timeouts": {
+      "pm_timeout": {
+        "type": "string",
+        "description": "Payment method timeout"
+      },
+      "confirm_timeout": {
+        "type": "string", 
+        "description": "Confirmation timeout"
+      },
+      "risk_timeout": {
+        "type": "string",
+        "description": "Risk assessment timeout"
+      },
+      "action_timeout": {
+        "type": "string",
+        "description": "Customer action timeout"
+      },
+      "capture_timeout": {
+        "type": "string",
+        "description": "Capture window timeout"
+      },
+      "capture_exec": {
+        "type": "string",
+        "description": "Capture execution timeout"
+      }
+    },
+    "user": {
+      "cancelled": {
+        "type": "boolean",
+        "default": false,
+        "description": "User cancellation flag"
+      }
+    },
+    "fraud_detected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Fraud detection flag"
+    },
+    "3ds_result": {
+      "type": "string",
+      "enum": ["authenticated", "failed", "pending"],
+      "description": "3D Secure authentication result"
+    },
+    "capture_amount": {
+      "type": "integer",
+      "description": "Amount to capture"
+    },
+    "captured_amount": {
+      "type": "integer",
+      "description": "Successfully captured amount"
+    },
+    "error_type": {
+      "type": "string",
+      "enum": ["retryable", "permanent", "temporary"],
+      "description": "Error classification"
+    },
+    "timeout_type": {
+      "type": "string",
+      "enum": ["confirmation", "customer_action", "capture_window"],
+      "description": "Type of timeout that occurred"
+    },
+    "available_processors": {
+      "count": {
+        "type": "integer",
+        "default": 0,
+        "description": "Number of available processors"
+      }
+    },
+    "fallback_processor": {
+      "available": {
+        "type": "boolean",
+        "default": false,
+        "description": "Fallback processor availability"
+      }
+    }
+  },
+  "events": [
+    {
+      "name": "create_intent",
+      "description": "Initialize payment intent with enhanced metadata",
+      "source": "external"
+    },
+    {
+      "name": "payment_method_attached", 
+      "description": "Payment method validated and attached",
+      "source": "external"
+    },
+    {
+      "name": "confirmation_received",
+      "description": "Payment confirmation from customer",
+      "source": "external"
+    },
+    {
+      "name": "risk_requires_action",
+      "description": "Risk assessment requires customer action",
+      "source": "internal"
+    },
+    {
+      "name": "risk_approved",
+      "description": "Risk assessment approved for processing",
+      "source": "internal"
+    },
+    {
+      "name": "risk_blocked",
+      "description": "Risk assessment blocked transaction",
+      "source": "internal"
+    },
+    {
+      "name": "customer_action_completed",
+      "description": "Customer completed required action",
+      "source": "external"
+    },
+    {
+      "name": "action_failed",
+      "description": "Customer action failed or timeout",
+      "source": "external"
+    },
+    {
+      "name": "authorization_succeeded",
+      "description": "Payment authorization successful",
+      "source": "internal"
+    },
+    {
+      "name": "settlement_confirmed",
+      "description": "Settlement confirmed by processor",
+      "source": "external"
+    },
+    {
+      "name": "settlement_failed",
+      "description": "Settlement failed, retry needed",
+      "source": "external"
+    },
+    {
+      "name": "retry_scheduled",
+      "description": "Retry with fallback processor scheduled", 
+      "source": "internal"
+    },
+    {
+      "name": "all_processors_failed",
+      "description": "All available processors failed",
+      "source": "internal"
+    },
+    {
+      "name": "capture_requested",
+      "description": "Manual or scheduled capture requested",
+      "source": "external"
+    },
+    {
+      "name": "capture_succeeded",
+      "description": "Capture operation successful",
+      "source": "external"
+    },
+    {
+      "name": "capture_failed",
+      "description": "Capture operation failed",
+      "source": "external"
+    },
+    {
+      "name": "user_cancellation",
+      "description": "User requested cancellation",
+      "source": "external"
+    },
+    {
+      "name": "timeout_expired",
+      "description": "Operation timeout expired",
+      "source": "internal"
+    }
+  ],
+  "states": [
+    {
+      "id": "created",
+      "name": "Created", 
+      "type": "initial",
+      "description": "Payment intent initialized with enhanced metadata",
+      "entry_tasks": [
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "compensation_status",
+            "value": "none"
+          }
+        },
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "retry_count", 
+            "value": 0
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Payment intent created with enhanced v2 features",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "requires_payment_method",
+      "name": "RequiresPaymentMethod",
+      "type": "intermediate",
+      "description": "Awaiting payment method attachment with validation",
+      "entry_tasks": [
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Awaiting payment method attachment",
+            "level": "info"
+          }
+        }
+      ],
+      "exit_tasks": [
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "payment_method.validated",
+            "value": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "requires_confirmation", 
+      "name": "RequiresConfirmation",
+      "type": "intermediate",
+      "description": "Ready for confirmation with risk assessment preparation",
+      "entry_tasks": [
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "authorization_hold.created",
+            "value": true
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Payment ready for confirmation",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "risk_assessment",
+      "name": "RiskAssessment", 
+      "type": "intermediate",
+      "description": "ML-powered risk assessment in progress",
+      "entry_tasks": [
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Initiating comprehensive risk assessment",
+            "level": "info"
+          }
+        }
+      ],
+      "exit_tasks": [
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Risk assessment completed",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "requires_action",
+      "name": "RequiresAction",
+      "type": "intermediate", 
+      "description": "Customer action required (3DS, verification)",
+      "entry_tasks": [
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Customer action required for authentication",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "processing",
+      "name": "Processing",
+      "type": "intermediate",
+      "description": "Payment processing with multi-processor support",
+      "entry_tasks": [
+        {
+          "action": "CopyVariableAction",
+          "config": {
+            "source_variable": "retry_count",
+            "target_variable": "current_retry_attempt"
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Processing payment with selected processor",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "settlement_retry",
+      "name": "SettlementRetry",
+      "type": "intermediate",
+      "description": "Retry logic with fallback processor selection",
+      "entry_tasks": [
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Initiating settlement retry with fallback processor",
+            "level": "warning"
+          }
+        }
+      ]
+    },
+    {
+      "id": "requires_capture",
+      "name": "RequiresCapture",
+      "type": "intermediate",
+      "description": "Manual capture required with partial support",
+      "entry_tasks": [
+        {
+          "action": "CopyVariableAction",
+          "config": {
+            "source_variable": "amount",
+            "target_variable": "amount_capturable"
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Payment authorized, capture required",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "capturing",
+      "name": "Capturing",
+      "type": "intermediate",
+      "description": "Capture execution in progress",
+      "entry_tasks": [
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Executing capture operation",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "succeeded",
+      "name": "Succeeded",
+      "type": "final",
+      "description": "Payment completed successfully with full audit trail",
+      "entry_tasks": [
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "settlement.confirmed",
+            "value": true
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Payment completed successfully",
+            "level": "info"
+          }
+        }
+      ]
+    },
+    {
+      "id": "canceled",
+      "name": "Canceled",
+      "type": "final",
+      "description": "Payment canceled with compensation patterns executed",
+      "entry_tasks": [
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "compensation_status",
+            "value": "in_progress"
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Payment canceled, executing compensation",
+            "level": "warning"
+          }
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "name": "Failed", 
+      "type": "final",
+      "description": "Payment failed with full rollback and compensation",
+      "entry_tasks": [
+        {
+          "action": "SetVariableValueAction",
+          "config": {
+            "variable": "compensation_status",
+            "value": "completed"
+          }
+        },
+        {
+          "action": "AddLogEntryAction",
+          "config": {
+            "message": "Payment failed, compensation completed",
+            "level": "error"
+          }
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "create_to_requires_pm",
+      "source_state": "created",
+      "target_state": "requires_payment_method",
+      "event": "create_intent",
+      "guard": null,
+      "description": "Initialize payment flow"
+    },
+    {
+      "id": "pm_to_confirmation",
+      "source_state": "requires_payment_method", 
+      "target_state": "requires_confirmation",
+      "event": "payment_method_attached",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "payment_method.validated",
+        "right_operand": true
+      },
+      "description": "Payment method validated"
+    },
+    {
+      "id": "confirmation_to_risk",
+      "source_state": "requires_confirmation",
+      "target_state": "risk_assessment", 
+      "event": "confirmation_received",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "authorization_hold.created",
+        "right_operand": true
+      },
+      "description": "Confirmation received, start risk assessment"
+    },
+    {
+      "id": "risk_to_action",
+      "source_state": "risk_assessment",
+      "target_state": "requires_action",
+      "event": "risk_requires_action", 
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "requires_3ds",
+        "right_operand": true
+      },
+      "description": "Risk assessment requires customer action"
+    },
+    {
+      "id": "risk_to_processing",
+      "source_state": "risk_assessment",
+      "target_state": "processing",
+      "event": "risk_approved",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "authorization_hold.created",
+        "right_operand": true
+      },
+      "description": "Risk assessment approved"
+    },
+    {
+      "id": "risk_to_canceled", 
+      "source_state": "risk_assessment",
+      "target_state": "canceled",
+      "event": "risk_blocked",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "fraud_detected",
+        "right_operand": true
+      },
+      "description": "Risk assessment blocked transaction"
+    },
+    {
+      "id": "action_to_processing",
+      "source_state": "requires_action",
+      "target_state": "processing",
+      "event": "customer_action_completed",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "3ds_result",
+        "right_operand": "authenticated"
+      },
+      "description": "Customer action completed successfully"
+    },
+    {
+      "id": "action_to_pm_retry",
+      "source_state": "requires_action",
+      "target_state": "requires_payment_method",
+      "event": "action_failed",
+      "guard": {
+        "operator": "LESS_THAN",
+        "left_operand": "retry_count", 
+        "right_operand": "max_retries"
+      },
+      "description": "Action failed, retry available"
+    },
+    {
+      "id": "action_to_failed",
+      "source_state": "requires_action",
+      "target_state": "failed",
+      "event": "action_failed",
+      "guard": {
+        "operator": "GREATER_THAN_OR_EQUAL",
+        "left_operand": "retry_count",
+        "right_operand": "max_retries"
+      },
+      "description": "Action failed, no retries left"
+    },
+    {
+      "id": "processing_to_capture",
+      "source_state": "processing",
+      "target_state": "requires_capture",
+      "event": "authorization_succeeded", 
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "capture_method",
+        "right_operand": "manual"
+      },
+      "description": "Authorization successful, manual capture"
+    },
+    {
+      "id": "processing_to_succeeded",
+      "source_state": "processing",
+      "target_state": "succeeded",
+      "event": "settlement_confirmed",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "capture_method",
+        "right_operand": "automatic"
+      },
+      "description": "Automatic settlement confirmed"
+    },
+    {
+      "id": "processing_to_retry",
+      "source_state": "processing",
+      "target_state": "settlement_retry",
+      "event": "settlement_failed",
+      "guard": {
+        "operator": "LESS_THAN",
+        "left_operand": "retry_count",
+        "right_operand": "max_settlement_retries"
+      },
+      "description": "Settlement failed, retry available"
+    },
+    {
+      "id": "processing_to_failed",
+      "source_state": "processing", 
+      "target_state": "failed",
+      "event": "settlement_failed",
+      "guard": {
+        "operator": "GREATER_THAN_OR_EQUAL",
+        "left_operand": "retry_count",
+        "right_operand": "max_settlement_retries"
+      },
+      "description": "Settlement failed, no retries left"
+    },
+    {
+      "id": "retry_to_processing",
+      "source_state": "settlement_retry",
+      "target_state": "processing",
+      "event": "retry_scheduled",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "fallback_processor.available",
+        "right_operand": true
+      },
+      "description": "Retry with fallback processor"
+    },
+    {
+      "id": "retry_to_failed",
+      "source_state": "settlement_retry",
+      "target_state": "failed",
+      "event": "all_processors_failed",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "available_processors.count",
+        "right_operand": 0
+      },
+      "description": "All processors exhausted"
+    },
+    {
+      "id": "capture_to_capturing",
+      "source_state": "requires_capture",
+      "target_state": "capturing",
+      "event": "capture_requested",
+      "guard": {
+        "operator": "GREATER_THAN",
+        "left_operand": "capture_amount",
+        "right_operand": 0
+      },
+      "description": "Capture requested"
+    },
+    {
+      "id": "capturing_to_succeeded",
+      "source_state": "capturing",
+      "target_state": "succeeded", 
+      "event": "capture_succeeded",
+      "guard": {
+        "operator": "GREATER_THAN",
+        "left_operand": "captured_amount",
+        "right_operand": 0
+      },
+      "description": "Capture successful"
+    },
+    {
+      "id": "capturing_to_capture_retry",
+      "source_state": "capturing",
+      "target_state": "requires_capture",
+      "event": "capture_failed",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "error_type",
+        "right_operand": "retryable"
+      },
+      "description": "Capture failed, retryable error"
+    },
+    {
+      "id": "capturing_to_failed",
+      "source_state": "capturing",
+      "target_state": "failed",
+      "event": "capture_failed", 
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "error_type",
+        "right_operand": "permanent"
+      },
+      "description": "Capture failed permanently"
+    },
+    {
+      "id": "pm_user_cancel",
+      "source_state": "requires_payment_method",
+      "target_state": "canceled",
+      "event": "user_cancellation",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "user.cancelled",
+        "right_operand": true
+      },
+      "description": "User canceled during payment method"
+    },
+    {
+      "id": "confirmation_timeout", 
+      "source_state": "requires_confirmation",
+      "target_state": "canceled",
+      "event": "timeout_expired",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "timeout_type",
+        "right_operand": "confirmation"
+      },
+      "description": "Confirmation timeout expired"
+    },
+    {
+      "id": "action_timeout",
+      "source_state": "requires_action",
+      "target_state": "canceled", 
+      "event": "timeout_expired",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "timeout_type",
+        "right_operand": "customer_action"
+      },
+      "description": "Customer action timeout"
+    },
+    {
+      "id": "capture_timeout",
+      "source_state": "requires_capture",
+      "target_state": "canceled",
+      "event": "timeout_expired",
+      "guard": {
+        "operator": "EQUALS",
+        "left_operand": "timeout_type",
+        "right_operand": "capture_window"
+      },
+      "description": "Capture window expired"
+    }
+  ]
+}

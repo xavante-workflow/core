@@ -1,0 +1,434 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1347pt" height="2559pt" viewBox="0.00 0.00 1347.00 2559.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 2554.6)">
+<title>PaymentIntentV2</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-2554.6 1342.92,-2554.6 1342.92,4 -4,4"/>
+<text xml:space="preserve" text-anchor="start" x="569.69" y="-2529.2" font-family="Times,serif" font-weight="bold" font-size="16.00">Payment Intent Workflow v2</text>
+<text xml:space="preserve" text-anchor="start" x="489.85" y="-2506.6" font-family="Times,serif" font-size="12.00">Enhanced Xavante Implementation with Advanced Compensation Patterns</text>
+<text xml:space="preserve" text-anchor="start" x="479.54" y="-2488" font-family="Times,serif" font-size="10.00">Features: Retry Logic | Partial Refunds | Multi-Processor Support | Advanced Risk Assessment</text>
+<!-- start -->
+<g id="node1" class="node">
+<title>start</title>
+<ellipse fill="#4caf50" stroke="#4caf50" cx="189" cy="-2319" rx="10.8" ry="10.8"/>
+</g>
+<!-- Created -->
+<g id="node2" class="node">
+<title>Created</title>
+<path fill="#e8eaf6" stroke="#3f51b5" d="M285.73,-2124C285.73,-2124 92.27,-2124 92.27,-2124 86.27,-2124 80.27,-2118 80.27,-2112 80.27,-2112 80.27,-1972 80.27,-1972 80.27,-1966 86.27,-1960 92.27,-1960 92.27,-1960 285.73,-1960 285.73,-1960 291.73,-1960 297.73,-1966 297.73,-1972 297.73,-1972 297.73,-2112 297.73,-2112 297.73,-2118 291.73,-2124 285.73,-2124"/>
+<text xml:space="preserve" text-anchor="start" x="170.38" y="-2106" font-family="Arial" font-weight="bold" font-size="10.00">Created</text>
+<text xml:space="preserve" text-anchor="start" x="94.27" y="-2084" font-family="Arial" font-style="italic" font-size="10.00">Initial State</text>
+<text xml:space="preserve" text-anchor="start" x="94.27" y="-2061" font-family="Arial" font-size="10.00">entry / initializePaymentMetadata()</text>
+<text xml:space="preserve" text-anchor="start" x="94.27" y="-2039" font-family="Arial" font-size="10.00">entry / setDefaultVariables()</text>
+<text xml:space="preserve" text-anchor="start" x="94.27" y="-2017" font-family="Arial" font-size="10.00">entry / generateIdempotencyKey()</text>
+<text xml:space="preserve" text-anchor="start" x="94.27" y="-1995" font-family="Arial" font-size="10.00">entry / publishWebhook('payment.created')</text>
+<text xml:space="preserve" text-anchor="start" x="94.27" y="-1973" font-family="Arial" font-size="10.00">exit / logInitialization()</text>
+</g>
+<!-- start&#45;&gt;Created -->
+<g id="edge1" class="edge">
+<title>start-&gt;Created</title>
+<path fill="none" stroke="#607d8b" d="M189,-2307.89C189,-2279.86 189,-2198.94 189,-2133.85"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="191.8,-2133.89 189,-2125.89 186.2,-2133.89 191.8,-2133.89"/>
+</g>
+<!-- RequiresPaymentMethod -->
+<g id="node3" class="node">
+<title>RequiresPaymentMethod</title>
+<path fill="#fff3e0" stroke="#ff8f00" d="M284.06,-1889.6C284.06,-1889.6 93.94,-1889.6 93.94,-1889.6 87.94,-1889.6 81.94,-1883.6 81.94,-1877.6 81.94,-1877.6 81.94,-1737.6 81.94,-1737.6 81.94,-1731.6 87.94,-1725.6 93.94,-1725.6 93.94,-1725.6 284.06,-1725.6 284.06,-1725.6 290.06,-1725.6 296.06,-1731.6 296.06,-1737.6 296.06,-1737.6 296.06,-1877.6 296.06,-1877.6 296.06,-1883.6 290.06,-1889.6 284.06,-1889.6"/>
+<text xml:space="preserve" text-anchor="start" x="128.99" y="-1871.6" font-family="Arial" font-weight="bold" font-size="10.00">RequiresPaymentMethod</text>
+<text xml:space="preserve" text-anchor="start" x="95.94" y="-1848.6" font-family="Arial" font-size="10.00">entry / validatePaymentMethodReqs()</text>
+<text xml:space="preserve" text-anchor="start" x="95.94" y="-1826.6" font-family="Arial" font-size="10.00">entry / setPaymentMethodRequiredFlag()</text>
+<text xml:space="preserve" text-anchor="start" x="95.94" y="-1804.6" font-family="Arial" font-size="10.00">entry / scheduleTimeout('pm_timeout', 7d)</text>
+<text xml:space="preserve" text-anchor="start" x="95.94" y="-1782.6" font-family="Arial" font-size="10.00">entry / publishWebhook('requires_pm')</text>
+<text xml:space="preserve" text-anchor="start" x="95.94" y="-1760.6" font-family="Arial" font-size="10.00">exit / clearTimeout('pm_timeout')</text>
+<text xml:space="preserve" text-anchor="start" x="95.94" y="-1738.6" font-family="Arial" font-size="10.00">exit / validatePaymentMethod()</text>
+</g>
+<!-- Created&#45;&gt;RequiresPaymentMethod -->
+<g id="edge2" class="edge">
+<title>Created-&gt;RequiresPaymentMethod</title>
+<path fill="none" stroke="#607d8b" d="M189,-1959.72C189,-1940.17 189,-1919.17 189,-1899.22"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="191.8,-1899.35 189,-1891.35 186.2,-1899.35 191.8,-1899.35"/>
+<text xml:space="preserve" text-anchor="start" x="193" y="-1930.9" font-family="Arial" font-weight="bold" font-size="9.00">create_intent</text>
+<text xml:space="preserve" text-anchor="start" x="208.78" y="-1914" font-family="Arial" font-size="8.00">always</text>
+</g>
+<!-- RequiresConfirmation -->
+<g id="node4" class="node">
+<title>RequiresConfirmation</title>
+<path fill="#f3e5f5" stroke="#8e24aa" d="M381.67,-1655.2C381.67,-1655.2 164.33,-1655.2 164.33,-1655.2 158.33,-1655.2 152.33,-1649.2 152.33,-1643.2 152.33,-1643.2 152.33,-1503.2 152.33,-1503.2 152.33,-1497.2 158.33,-1491.2 164.33,-1491.2 164.33,-1491.2 381.67,-1491.2 381.67,-1491.2 387.67,-1491.2 393.67,-1497.2 393.67,-1503.2 393.67,-1503.2 393.67,-1643.2 393.67,-1643.2 393.67,-1649.2 387.67,-1655.2 381.67,-1655.2"/>
+<text xml:space="preserve" text-anchor="start" x="220.5" y="-1637.2" font-family="Arial" font-weight="bold" font-size="10.00">RequiresConfirmation</text>
+<text xml:space="preserve" text-anchor="start" x="166.33" y="-1614.2" font-family="Arial" font-size="10.00">entry / initiateRiskAssessment()</text>
+<text xml:space="preserve" text-anchor="start" x="166.33" y="-1592.2" font-family="Arial" font-size="10.00">entry / createAuthorizationHold()</text>
+<text xml:space="preserve" text-anchor="start" x="166.33" y="-1570.2" font-family="Arial" font-size="10.00">entry / scheduleTimeout('confirm_timeout', 30m)</text>
+<text xml:space="preserve" text-anchor="start" x="166.33" y="-1548.2" font-family="Arial" font-size="10.00">entry / publishWebhook('requires_confirmation')</text>
+<text xml:space="preserve" text-anchor="start" x="166.33" y="-1526.2" font-family="Arial" font-size="10.00">exit / releaseTemporaryResources()</text>
+<text xml:space="preserve" text-anchor="start" x="166.33" y="-1504.2" font-family="Arial" font-size="10.00">exit / clearTimeout('confirm_timeout')</text>
+</g>
+<!-- RequiresPaymentMethod&#45;&gt;RequiresConfirmation -->
+<g id="edge3" class="edge">
+<title>RequiresPaymentMethod-&gt;RequiresConfirmation</title>
+<path fill="none" stroke="#607d8b" d="M218.38,-1725.32C225.51,-1705.59 233.17,-1684.39 240.44,-1664.28"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="243.04,-1665.34 243.12,-1656.86 237.77,-1663.43 243.04,-1665.34"/>
+<text xml:space="preserve" text-anchor="start" x="243.58" y="-1696.5" font-family="Arial" font-weight="bold" font-size="9.00">payment_method_attached</text>
+<text xml:space="preserve" text-anchor="start" x="240.03" y="-1679.6" font-family="Arial" font-size="8.00">payment_method.validated == true</text>
+</g>
+<!-- Canceled -->
+<g id="node12" class="node">
+<title>Canceled</title>
+<path fill="#ffebee" stroke="#e53935" d="M485.07,-410.4C485.07,-410.4 284.93,-410.4 284.93,-410.4 278.93,-410.4 272.93,-404.4 272.93,-398.4 272.93,-398.4 272.93,-258.4 272.93,-258.4 272.93,-252.4 278.93,-246.4 284.93,-246.4 284.93,-246.4 485.07,-246.4 485.07,-246.4 491.07,-246.4 497.07,-252.4 497.07,-258.4 497.07,-258.4 497.07,-398.4 497.07,-398.4 497.07,-404.4 491.07,-410.4 485.07,-410.4"/>
+<path fill="none" stroke="#e53935" d="M489.07,-414.4C489.07,-414.4 280.93,-414.4 280.93,-414.4 274.93,-414.4 268.93,-408.4 268.93,-402.4 268.93,-402.4 268.93,-254.4 268.93,-254.4 268.93,-248.4 274.93,-242.4 280.93,-242.4 280.93,-242.4 489.07,-242.4 489.07,-242.4 495.07,-242.4 501.07,-248.4 501.07,-254.4 501.07,-254.4 501.07,-402.4 501.07,-402.4 501.07,-408.4 495.07,-414.4 489.07,-414.4"/>
+<text xml:space="preserve" text-anchor="start" x="362.77" y="-392.4" font-family="Arial" font-weight="bold" font-size="10.00">Canceled</text>
+<text xml:space="preserve" text-anchor="start" x="286.93" y="-370.4" font-family="Arial" font-style="italic" font-size="10.00">Final State</text>
+<text xml:space="preserve" text-anchor="start" x="286.93" y="-347.4" font-family="Arial" font-size="10.00">entry / triggerRefundsIfApplicable()</text>
+<text xml:space="preserve" text-anchor="start" x="286.93" y="-325.4" font-family="Arial" font-size="10.00">entry / notifyMerchantSystem()</text>
+<text xml:space="preserve" text-anchor="start" x="286.93" y="-303.4" font-family="Arial" font-size="10.00">entry / executeCompensationPattern()</text>
+<text xml:space="preserve" text-anchor="start" x="286.93" y="-281.4" font-family="Arial" font-size="10.00">entry / publishWebhook('payment.canceled')</text>
+<text xml:space="preserve" text-anchor="start" x="286.93" y="-259.4" font-family="Arial" font-size="10.00">exit / markTimelineCompletion()</text>
+</g>
+<!-- RequiresPaymentMethod&#45;&gt;Canceled -->
+<g id="edge21" class="edge">
+<title>RequiresPaymentMethod-&gt;Canceled</title>
+<path fill="none" stroke="#607d8b" d="M81.52,-1728.49C38.97,-1688.13 0,-1634.66 0,-1574.2 0,-1574.2 0,-1574.2 0,-581.4 0,-455.01 147.05,-388.59 259.4,-356.29"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="260.05,-359.02 266.99,-354.15 258.53,-353.63 260.05,-359.02"/>
+<text xml:space="preserve" text-anchor="start" x="5.56" y="-1079.3" font-family="Arial" font-weight="bold" font-size="9.00">user_cancellation</text>
+<text xml:space="preserve" text-anchor="start" x="4" y="-1062.4" font-family="Arial" font-size="8.00">user.cancelled == true</text>
+</g>
+<!-- RequiresPaymentMethod&#45;&gt;Canceled -->
+<g id="edge25" class="edge">
+<title>RequiresPaymentMethod-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M149.62,-1725.23C131.94,-1681.51 115,-1626.07 115,-1574.2 115,-1574.2 115,-1574.2 115,-581.4 115,-508.61 128.95,-481.16 183,-432.4 205.58,-412.03 232.93,-394.57 260.11,-380.13"/>
+<polygon fill="#e53935" stroke="#e53935" points="261.39,-382.62 267.2,-376.44 258.81,-377.65 261.39,-382.62"/>
+</g>
+<!-- RiskAssessment -->
+<g id="node5" class="node">
+<title>RiskAssessment</title>
+<path fill="#fff8e1" stroke="#ffb300" d="M511.39,-1405.2C511.39,-1405.2 314.61,-1405.2 314.61,-1405.2 308.61,-1405.2 302.61,-1399.2 302.61,-1393.2 302.61,-1393.2 302.61,-1253.2 302.61,-1253.2 302.61,-1247.2 308.61,-1241.2 314.61,-1241.2 314.61,-1241.2 511.39,-1241.2 511.39,-1241.2 517.39,-1241.2 523.39,-1247.2 523.39,-1253.2 523.39,-1253.2 523.39,-1393.2 523.39,-1393.2 523.39,-1399.2 517.39,-1405.2 511.39,-1405.2"/>
+<text xml:space="preserve" text-anchor="start" x="372.98" y="-1387.2" font-family="Arial" font-weight="bold" font-size="10.00">RiskAssessment</text>
+<text xml:space="preserve" text-anchor="start" x="316.61" y="-1364.2" font-family="Arial" font-size="10.00">entry / callRiskAPI()</text>
+<text xml:space="preserve" text-anchor="start" x="316.61" y="-1342.2" font-family="Arial" font-size="10.00">entry / analyzeTransactionPattern()</text>
+<text xml:space="preserve" text-anchor="start" x="316.61" y="-1320.2" font-family="Arial" font-size="10.00">entry / checkFraudDatabase()</text>
+<text xml:space="preserve" text-anchor="start" x="316.61" y="-1298.2" font-family="Arial" font-size="10.00">entry / scheduleTimeout('risk_timeout', 45s)</text>
+<text xml:space="preserve" text-anchor="start" x="316.61" y="-1276.2" font-family="Arial" font-size="10.00">exit / clearTimeout('risk_timeout')</text>
+<text xml:space="preserve" text-anchor="start" x="316.61" y="-1254.2" font-family="Arial" font-size="10.00">exit / cacheRiskScore()</text>
+</g>
+<!-- RequiresConfirmation&#45;&gt;RiskAssessment -->
+<g id="edge4" class="edge">
+<title>RequiresConfirmation-&gt;RiskAssessment</title>
+<path fill="none" stroke="#607d8b" d="M318.84,-1491C332.8,-1466.27 348.22,-1438.95 362.47,-1413.7"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="364.82,-1415.25 366.31,-1406.9 359.94,-1412.5 364.82,-1415.25"/>
+<text xml:space="preserve" text-anchor="start" x="372.45" y="-1454.3" font-family="Arial" font-weight="bold" font-size="9.00">confirmation_received</text>
+<text xml:space="preserve" text-anchor="start" x="359.54" y="-1437.4" font-family="Arial" font-size="8.00">authorization_hold.created == true</text>
+</g>
+<!-- RequiresConfirmation&#45;&gt;Canceled -->
+<g id="edge22" class="edge">
+<title>RequiresConfirmation-&gt;Canceled</title>
+<path fill="none" stroke="#607d8b" d="M210.89,-1490.81C181.61,-1444.52 153,-1383.99 153,-1324.2 153,-1324.2 153,-1324.2 153,-581.4 153,-508.69 205.92,-447.96 261.2,-404.34"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="262.85,-406.61 267.46,-399.5 259.42,-402.18 262.85,-406.61"/>
+<text xml:space="preserve" text-anchor="start" x="175.35" y="-962.1" font-family="Arial" font-weight="bold" font-size="9.00">timeout_expired</text>
+<text xml:space="preserve" text-anchor="start" x="157" y="-945.2" font-family="Arial" font-size="8.00">timeout_type == 'confirmation'</text>
+</g>
+<!-- RequiresConfirmation&#45;&gt;Canceled -->
+<g id="edge26" class="edge">
+<title>RequiresConfirmation-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M272.27,-1491.03C270.85,-1275.08 270.51,-690.02 306,-500.4 310.9,-474.23 320.67,-447.42 331.72,-423.01"/>
+<polygon fill="#e53935" stroke="#e53935" points="334.21,-424.29 335.04,-415.86 329.13,-421.94 334.21,-424.29"/>
+</g>
+<!-- RequiresAction -->
+<g id="node6" class="node">
+<title>RequiresAction</title>
+<path fill="#e8f5e8" stroke="#43a047" d="M664.62,-1155.2C664.62,-1155.2 453.38,-1155.2 453.38,-1155.2 447.38,-1155.2 441.38,-1149.2 441.38,-1143.2 441.38,-1143.2 441.38,-1003.2 441.38,-1003.2 441.38,-997.2 447.38,-991.2 453.38,-991.2 453.38,-991.2 664.62,-991.2 664.62,-991.2 670.62,-991.2 676.62,-997.2 676.62,-1003.2 676.62,-1003.2 676.62,-1143.2 676.62,-1143.2 676.62,-1149.2 670.62,-1155.2 664.62,-1155.2"/>
+<text xml:space="preserve" text-anchor="start" x="522.05" y="-1137.2" font-family="Arial" font-weight="bold" font-size="10.00">RequiresAction</text>
+<text xml:space="preserve" text-anchor="start" x="455.38" y="-1114.2" font-family="Arial" font-size="10.00">entry / setNextActionType('3ds_challenge')</text>
+<text xml:space="preserve" text-anchor="start" x="455.38" y="-1092.2" font-family="Arial" font-size="10.00">entry / generateChallengeToken()</text>
+<text xml:space="preserve" text-anchor="start" x="455.38" y="-1070.2" font-family="Arial" font-size="10.00">entry / scheduleTimeout('action_timeout', 15m)</text>
+<text xml:space="preserve" text-anchor="start" x="455.38" y="-1048.2" font-family="Arial" font-size="10.00">entry / publishWebhook('requires_action')</text>
+<text xml:space="preserve" text-anchor="start" x="455.38" y="-1026.2" font-family="Arial" font-size="10.00">exit / clearTimeout('action_timeout')</text>
+<text xml:space="preserve" text-anchor="start" x="455.38" y="-1004.2" font-family="Arial" font-size="10.00">exit / validateCustomerResponse()</text>
+</g>
+<!-- RiskAssessment&#45;&gt;RequiresAction -->
+<g id="edge5" class="edge">
+<title>RiskAssessment-&gt;RequiresAction</title>
+<path fill="none" stroke="#607d8b" d="M399.58,-1241.05C399.31,-1218.01 402.64,-1193.65 413.5,-1173.2 418.99,-1162.87 426.09,-1153.42 434.19,-1144.82"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="436.16,-1146.81 439.83,-1139.17 432.19,-1142.85 436.16,-1146.81"/>
+<text xml:space="preserve" text-anchor="start" x="438.73" y="-1212.1" font-family="Arial" font-weight="bold" font-size="9.00">risk_requires_action</text>
+<text xml:space="preserve" text-anchor="start" x="417.5" y="-1195.2" font-family="Arial" font-size="8.00">risk_score &gt; medium_threshold AND</text>
+<text xml:space="preserve" text-anchor="start" x="445.84" y="-1179.6" font-family="Arial" font-size="8.00">requires_3ds == true</text>
+</g>
+<!-- Processing -->
+<g id="node7" class="node">
+<title>Processing</title>
+<path fill="#e1f5fe" stroke="#039be5" d="M841.67,-920.8C841.67,-920.8 674.33,-920.8 674.33,-920.8 668.33,-920.8 662.33,-914.8 662.33,-908.8 662.33,-908.8 662.33,-746.8 662.33,-746.8 662.33,-740.8 668.33,-734.8 674.33,-734.8 674.33,-734.8 841.67,-734.8 841.67,-734.8 847.67,-734.8 853.67,-740.8 853.67,-746.8 853.67,-746.8 853.67,-908.8 853.67,-908.8 853.67,-914.8 847.67,-920.8 841.67,-920.8"/>
+<text xml:space="preserve" text-anchor="start" x="731.04" y="-902.8" font-family="Arial" font-weight="bold" font-size="10.00">Processing</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-879.8" font-family="Arial" font-size="10.00">entry / startSettlementTimer()</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-857.8" font-family="Arial" font-size="10.00">entry / lockPaymentVariables()</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-835.8" font-family="Arial" font-size="10.00">entry / callPrimaryProcessor()</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-813.8" font-family="Arial" font-size="10.00">entry / incrementRetryCount()</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-791.8" font-family="Arial" font-size="10.00">entry / publishWebhook('processing')</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-769.8" font-family="Arial" font-size="10.00">exit / updateAuditTrail()</text>
+<text xml:space="preserve" text-anchor="start" x="676.33" y="-747.8" font-family="Arial" font-size="10.00">exit / unlockPaymentVariables()</text>
+</g>
+<!-- RiskAssessment&#45;&gt;Processing -->
+<g id="edge6" class="edge">
+<title>RiskAssessment-&gt;Processing</title>
+<path fill="none" stroke="#607d8b" d="M523.55,-1279.62C580.31,-1252.3 645.79,-1211.32 686,-1155.2 732.9,-1089.74 750.11,-999.34 756.04,-930.27"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="758.8,-930.81 756.65,-922.61 753.22,-930.36 758.8,-930.81"/>
+<text xml:space="preserve" text-anchor="start" x="775.61" y="-1087.1" font-family="Arial" font-weight="bold" font-size="9.00">risk_approved</text>
+<text xml:space="preserve" text-anchor="start" x="757.58" y="-1070.2" font-family="Arial" font-size="8.00">risk_score &lt; threshold AND</text>
+<text xml:space="preserve" text-anchor="start" x="751.89" y="-1054.6" font-family="Arial" font-size="8.00">authorization.approved == true</text>
+</g>
+<!-- RiskAssessment&#45;&gt;Canceled -->
+<g id="edge7" class="edge">
+<title>RiskAssessment-&gt;Canceled</title>
+<path fill="none" stroke="#607d8b" d="M389.64,-1240.83C377.84,-1192.78 366,-1130.51 366,-1074.2 366,-1074.2 366,-1074.2 366,-581.4 366,-529.27 370.09,-471.23 374.48,-424.01"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="377.25,-424.45 375.22,-416.23 371.68,-423.93 377.25,-424.45"/>
+<text xml:space="preserve" text-anchor="start" x="398.62" y="-841.7" font-family="Arial" font-weight="bold" font-size="9.00">risk_blocked</text>
+<text xml:space="preserve" text-anchor="start" x="370" y="-824.8" font-family="Arial" font-size="8.00">risk_score &gt; high_threshold OR</text>
+<text xml:space="preserve" text-anchor="start" x="385.66" y="-809.2" font-family="Arial" font-size="8.00">fraud_detected == true</text>
+</g>
+<!-- RiskAssessment&#45;&gt;Canceled -->
+<g id="edge27" class="edge">
+<title>RiskAssessment-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M365.82,-1240.95C342.8,-1193.85 320,-1132.48 320,-1074.2 320,-1074.2 320,-1074.2 320,-581.4 320,-528.13 333.79,-470.48 348.66,-423.77"/>
+<polygon fill="#e53935" stroke="#e53935" points="351.27,-424.8 351.08,-416.33 345.95,-423.07 351.27,-424.8"/>
+</g>
+<!-- RequiresAction&#45;&gt;RequiresPaymentMethod -->
+<g id="edge9" class="edge">
+<title>RequiresAction-&gt;RequiresPaymentMethod</title>
+<path fill="none" stroke="#607d8b" d="M561.79,-1155.55C561.92,-1223.65 556.89,-1322.68 532,-1405.2 458.39,-1649.29 421.15,-1660.29 372,-1707.6 352.36,-1726.5 328.39,-1742.87 304.36,-1756.54"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="303.16,-1754 297.54,-1760.34 305.89,-1758.89 303.16,-1754"/>
+<text xml:space="preserve" text-anchor="start" x="547.8" y="-1462.1" font-family="Arial" font-weight="bold" font-size="9.00">action_failed</text>
+<text xml:space="preserve" text-anchor="start" x="529.31" y="-1445.2" font-family="Arial" font-size="8.00">3ds_result == 'failed' AND</text>
+<text xml:space="preserve" text-anchor="start" x="529.84" y="-1429.6" font-family="Arial" font-size="8.00">retry_count &lt; max_retries</text>
+</g>
+<!-- RequiresAction&#45;&gt;Processing -->
+<g id="edge8" class="edge">
+<title>RequiresAction-&gt;Processing</title>
+<path fill="none" stroke="#607d8b" d="M572.51,-990.86C578.07,-972.61 585.91,-954.14 596.96,-938.8 612.28,-917.55 633.05,-899.09 654.57,-883.68"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="656.01,-886.1 660.97,-879.23 652.81,-881.5 656.01,-886.1"/>
+<text xml:space="preserve" text-anchor="start" x="600.96" y="-962.1" font-family="Arial" font-weight="bold" font-size="9.00">customer_action_completed</text>
+<text xml:space="preserve" text-anchor="start" x="611.09" y="-945.2" font-family="Arial" font-size="8.00">3ds_result == 'authenticated'</text>
+</g>
+<!-- RequiresAction&#45;&gt;Canceled -->
+<g id="edge23" class="edge">
+<title>RequiresAction-&gt;Canceled</title>
+<path fill="none" stroke="#607d8b" d="M541.69,-990.9C540.43,-984.91 539.19,-978.96 538,-973.2 516.12,-867.36 566.07,-811.58 490,-734.8 462.72,-707.26 429.83,-746.28 404.66,-716.8 386.06,-695.03 383.5,-531.26 383.87,-423.73"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="386.67,-424 383.91,-415.99 381.07,-423.98 386.67,-424"/>
+<text xml:space="preserve" text-anchor="start" x="434.57" y="-705.7" font-family="Arial" font-weight="bold" font-size="9.00">timeout_expired</text>
+<text xml:space="preserve" text-anchor="start" x="408.66" y="-688.8" font-family="Arial" font-size="8.00">timeout_type == 'customer_action'</text>
+</g>
+<!-- RequiresAction&#45;&gt;Canceled -->
+<g id="edge28" class="edge">
+<title>RequiresAction-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M564.75,-990.82C570.03,-890.35 572.08,-727.24 534,-682.4 510.97,-655.28 480.93,-689.78 456,-664.4 439.07,-647.16 415,-516.69 399.7,-423.78"/>
+<polygon fill="#e53935" stroke="#e53935" points="402.5,-423.56 398.44,-416.12 396.97,-424.47 402.5,-423.56"/>
+</g>
+<!-- Failed -->
+<g id="node13" class="node">
+<title>Failed</title>
+<path fill="#fff3e0" stroke="#fb8c00" d="M1088.01,-168C1088.01,-168 903.99,-168 903.99,-168 897.99,-168 891.99,-162 891.99,-156 891.99,-156 891.99,-16 891.99,-16 891.99,-10 897.99,-4 903.99,-4 903.99,-4 1088.01,-4 1088.01,-4 1094.01,-4 1100.01,-10 1100.01,-16 1100.01,-16 1100.01,-156 1100.01,-156 1100.01,-162 1094.01,-168 1088.01,-168"/>
+<path fill="none" stroke="#fb8c00" d="M1092.01,-172C1092.01,-172 899.99,-172 899.99,-172 893.99,-172 887.99,-166 887.99,-160 887.99,-160 887.99,-12 887.99,-12 887.99,-6 893.99,0 899.99,0 899.99,0 1092.01,0 1092.01,0 1098.01,0 1104.01,-6 1104.01,-12 1104.01,-12 1104.01,-160 1104.01,-160 1104.01,-166 1098.01,-172 1092.01,-172"/>
+<text xml:space="preserve" text-anchor="start" x="981.55" y="-150" font-family="Arial" font-weight="bold" font-size="10.00">Failed</text>
+<text xml:space="preserve" text-anchor="start" x="905.99" y="-128" font-family="Arial" font-style="italic" font-size="10.00">Final State</text>
+<text xml:space="preserve" text-anchor="start" x="905.99" y="-105" font-family="Arial" font-size="10.00">entry / executeAuthorizationRollback()</text>
+<text xml:space="preserve" text-anchor="start" x="905.99" y="-83" font-family="Arial" font-size="10.00">entry / releaseAllHolds()</text>
+<text xml:space="preserve" text-anchor="start" x="905.99" y="-61" font-family="Arial" font-size="10.00">entry / logFailureReason()</text>
+<text xml:space="preserve" text-anchor="start" x="905.99" y="-39" font-family="Arial" font-size="10.00">entry / publishWebhook('payment.failed')</text>
+<text xml:space="preserve" text-anchor="start" x="905.99" y="-17" font-family="Arial" font-size="10.00">exit / cleanupFailedTransaction()</text>
+</g>
+<!-- RequiresAction&#45;&gt;Failed -->
+<g id="edge10" class="edge">
+<title>RequiresAction-&gt;Failed</title>
+<path fill="none" stroke="#607d8b" d="M676.85,-993.85C678.57,-992.95 680.29,-992.06 682,-991.2 702.71,-980.75 709.33,-981.48 731,-973.2 1042.34,-854.24 1188.52,-797.2 1298,-482.4 1338.79,-365.11 1216.61,-233.91 1172,-190 1159.25,-177.45 1151.66,-180.65 1136,-172 1128.25,-167.72 1120.32,-163.23 1112.36,-158.63"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="1114.03,-156.36 1105.71,-154.77 1111.22,-161.21 1114.03,-156.36"/>
+</g>
+<!-- SettlementRetry -->
+<g id="node8" class="node">
+<title>SettlementRetry</title>
+<path fill="#fff9c4" stroke="#f57f17" d="M959.8,-653.4C959.8,-653.4 810.2,-653.4 810.2,-653.4 804.2,-653.4 798.2,-647.4 798.2,-641.4 798.2,-641.4 798.2,-523.4 798.2,-523.4 798.2,-517.4 804.2,-511.4 810.2,-511.4 810.2,-511.4 959.8,-511.4 959.8,-511.4 965.8,-511.4 971.8,-517.4 971.8,-523.4 971.8,-523.4 971.8,-641.4 971.8,-641.4 971.8,-647.4 965.8,-653.4 959.8,-653.4"/>
+<text xml:space="preserve" text-anchor="start" x="846.66" y="-635.4" font-family="Arial" font-weight="bold" font-size="10.00">SettlementRetry</text>
+<text xml:space="preserve" text-anchor="start" x="812.2" y="-612.4" font-family="Arial" font-size="10.00">entry / selectFallbackProcessor()</text>
+<text xml:space="preserve" text-anchor="start" x="812.2" y="-590.4" font-family="Arial" font-size="10.00">entry / recalculateAmounts()</text>
+<text xml:space="preserve" text-anchor="start" x="812.2" y="-568.4" font-family="Arial" font-size="10.00">entry / scheduleRetryDelay()</text>
+<text xml:space="preserve" text-anchor="start" x="812.2" y="-546.4" font-family="Arial" font-size="10.00">entry / notifyMerchantOfDelay()</text>
+<text xml:space="preserve" text-anchor="start" x="812.2" y="-524.4" font-family="Arial" font-size="10.00">exit / clearRetrySchedule()</text>
+</g>
+<!-- Processing&#45;&gt;SettlementRetry -->
+<g id="edge13" class="edge">
+<title>Processing-&gt;SettlementRetry</title>
+<path fill="none" stroke="#607d8b" d="M747.86,-734.57C749.12,-716.58 752.84,-698.36 760.72,-682.4 768.08,-667.48 778.88,-654.09 791.08,-642.34"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="792.88,-644.49 796.88,-637.01 789.09,-640.37 792.88,-644.49"/>
+<text xml:space="preserve" text-anchor="start" x="794.1" y="-705.7" font-family="Arial" font-weight="bold" font-size="9.00">settlement_failed</text>
+<text xml:space="preserve" text-anchor="start" x="764.72" y="-688.8" font-family="Arial" font-size="8.00">retry_count &lt; max_settlement_retries</text>
+</g>
+<!-- RequiresCapture -->
+<g id="node9" class="node">
+<title>RequiresCapture</title>
+<path fill="#f1f8e9" stroke="#689f38" d="M729.79,-664.4C729.79,-664.4 520.21,-664.4 520.21,-664.4 514.21,-664.4 508.21,-658.4 508.21,-652.4 508.21,-652.4 508.21,-512.4 508.21,-512.4 508.21,-506.4 514.21,-500.4 520.21,-500.4 520.21,-500.4 729.79,-500.4 729.79,-500.4 735.79,-500.4 741.79,-506.4 741.79,-512.4 741.79,-512.4 741.79,-652.4 741.79,-652.4 741.79,-658.4 735.79,-664.4 729.79,-664.4"/>
+<text xml:space="preserve" text-anchor="start" x="584.71" y="-646.4" font-family="Arial" font-weight="bold" font-size="10.00">RequiresCapture</text>
+<text xml:space="preserve" text-anchor="start" x="522.21" y="-623.4" font-family="Arial" font-size="10.00">entry / setAmountCapturable()</text>
+<text xml:space="preserve" text-anchor="start" x="522.21" y="-601.4" font-family="Arial" font-size="10.00">entry / scheduleTimeout('capture_timeout', 7d)</text>
+<text xml:space="preserve" text-anchor="start" x="522.21" y="-579.4" font-family="Arial" font-size="10.00">entry / publishWebhook('requires_capture')</text>
+<text xml:space="preserve" text-anchor="start" x="522.21" y="-557.4" font-family="Arial" font-size="10.00">entry / enablePartialCaptureFlag()</text>
+<text xml:space="preserve" text-anchor="start" x="522.21" y="-535.4" font-family="Arial" font-size="10.00">exit / clearTimeout('capture_timeout')</text>
+<text xml:space="preserve" text-anchor="start" x="522.21" y="-513.4" font-family="Arial" font-size="10.00">exit / validateCaptureAmount()</text>
+</g>
+<!-- Processing&#45;&gt;RequiresCapture -->
+<g id="edge11" class="edge">
+<title>Processing-&gt;RequiresCapture</title>
+<path fill="none" stroke="#607d8b" d="M662.14,-760.91C649.25,-747.82 637.8,-733.03 629.97,-716.8 623.6,-703.57 620.07,-688.72 618.38,-673.86"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="621.19,-673.85 617.69,-666.13 615.61,-674.35 621.19,-673.85"/>
+<text xml:space="preserve" text-anchor="start" x="633.97" y="-705.7" font-family="Arial" font-weight="bold" font-size="9.00">authorization_succeeded</text>
+<text xml:space="preserve" text-anchor="start" x="637.54" y="-688.8" font-family="Arial" font-size="8.00">capture_method == 'manual'</text>
+</g>
+<!-- Succeeded -->
+<g id="node11" class="node">
+<title>Succeeded</title>
+<path fill="#e8f5e8" stroke="#4caf50" d="M1322.92,-168C1322.92,-168 1161.08,-168 1161.08,-168 1155.08,-168 1149.08,-162 1149.08,-156 1149.08,-156 1149.08,-16 1149.08,-16 1149.08,-10 1155.08,-4 1161.08,-4 1161.08,-4 1322.92,-4 1322.92,-4 1328.92,-4 1334.92,-10 1334.92,-16 1334.92,-16 1334.92,-156 1334.92,-156 1334.92,-162 1328.92,-168 1322.92,-168"/>
+<path fill="none" stroke="#4caf50" d="M1326.92,-172C1326.92,-172 1157.08,-172 1157.08,-172 1151.08,-172 1145.08,-166 1145.08,-160 1145.08,-160 1145.08,-12 1145.08,-12 1145.08,-6 1151.08,0 1157.08,0 1157.08,0 1326.92,0 1326.92,0 1332.92,0 1338.92,-6 1338.92,-12 1338.92,-12 1338.92,-160 1338.92,-160 1338.92,-166 1332.92,-172 1326.92,-172"/>
+<text xml:space="preserve" text-anchor="start" x="1215.6" y="-150" font-family="Arial" font-weight="bold" font-size="10.00">Succeeded</text>
+<text xml:space="preserve" text-anchor="start" x="1163.08" y="-128" font-family="Arial" font-style="italic" font-size="10.00">Final State</text>
+<text xml:space="preserve" text-anchor="start" x="1163.08" y="-105" font-family="Arial" font-size="10.00">entry / sendConfirmationWebhook()</text>
+<text xml:space="preserve" text-anchor="start" x="1163.08" y="-83" font-family="Arial" font-size="10.00">entry / archivePaymentData()</text>
+<text xml:space="preserve" text-anchor="start" x="1163.08" y="-61" font-family="Arial" font-size="10.00">entry / updateMerchantBalance()</text>
+<text xml:space="preserve" text-anchor="start" x="1163.08" y="-39" font-family="Arial" font-size="10.00">entry / generateReceiptData()</text>
+<text xml:space="preserve" text-anchor="start" x="1163.08" y="-17" font-family="Arial" font-size="10.00">exit / cleanTemporaryData()</text>
+</g>
+<!-- Processing&#45;&gt;Succeeded -->
+<g id="edge12" class="edge">
+<title>Processing-&gt;Succeeded</title>
+<path fill="none" stroke="#607d8b" d="M853.83,-816.38C942.47,-800.72 1066.96,-761.65 1111,-664.4 1183.77,-503.72 1217.85,-299.01 1232.4,-181.5"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="1235.17,-181.93 1233.36,-173.65 1229.61,-181.25 1235.17,-181.93"/>
+<text xml:space="preserve" text-anchor="start" x="1208.64" y="-471.3" font-family="Arial" font-weight="bold" font-size="9.00">settlement_confirmed</text>
+<text xml:space="preserve" text-anchor="start" x="1191.17" y="-454.4" font-family="Arial" font-size="8.00">capture_method == 'automatic' AND</text>
+<text xml:space="preserve" text-anchor="start" x="1204.49" y="-438.8" font-family="Arial" font-size="8.00">settlement.confirmed == true</text>
+</g>
+<!-- Processing&#45;&gt;Canceled -->
+<g id="edge29" class="edge">
+<title>Processing-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M661.85,-752.37C622.29,-722.75 580.71,-693.15 559,-682.4 534.05,-670.05 518.02,-684.73 499,-664.4 426.75,-587.15 485.2,-530.64 446,-432.4 444.79,-429.36 443.5,-426.31 442.14,-423.26"/>
+<polygon fill="#e53935" stroke="#e53935" points="444.69,-422.11 438.78,-416.03 439.61,-424.47 444.69,-422.11"/>
+</g>
+<!-- Processing&#45;&gt;Failed -->
+<g id="edge14" class="edge">
+<title>Processing-&gt;Failed</title>
+<path fill="none" stroke="#607d8b" d="M854.04,-814.84C918.57,-801.7 1000.4,-774.2 1049,-716.8 1117.67,-635.71 1141.86,-343.45 1109,-242.4 1101.94,-220.7 1090.59,-199.49 1077.73,-180.07"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="1080.21,-178.73 1073.39,-173.69 1075.58,-181.88 1080.21,-178.73"/>
+</g>
+<!-- SettlementRetry&#45;&gt;Processing -->
+<g id="edge15" class="edge">
+<title>SettlementRetry-&gt;Processing</title>
+<path fill="none" stroke="#607d8b" d="M907.96,-653.79C911.08,-674.9 910.48,-697.55 901,-716.8 891.62,-735.86 877.17,-752.53 861,-766.76"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="859.43,-764.42 855.13,-771.73 863.05,-768.69 859.43,-764.42"/>
+<text xml:space="preserve" text-anchor="start" x="942.48" y="-705.7" font-family="Arial" font-weight="bold" font-size="9.00">retry_scheduled</text>
+<text xml:space="preserve" text-anchor="start" x="913.21" y="-688.8" font-family="Arial" font-size="8.00">fallback_processor.available == true</text>
+</g>
+<!-- SettlementRetry&#45;&gt;Canceled -->
+<g id="edge30" class="edge">
+<title>SettlementRetry-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M856.92,-511.02C841.97,-475.15 825.22,-437.9 818,-432.4 776.13,-400.54 752.48,-425.25 701,-414.4 637.68,-401.06 568.15,-382.76 510.47,-366.56"/>
+<polygon fill="#e53935" stroke="#e53935" points="511.23,-363.86 502.77,-364.39 509.71,-369.25 511.23,-363.86"/>
+</g>
+<!-- SettlementRetry&#45;&gt;Failed -->
+<g id="edge16" class="edge">
+<title>SettlementRetry-&gt;Failed</title>
+<path fill="none" stroke="#607d8b" d="M939.35,-510.96C944.67,-501.71 949.41,-492.08 953,-482.4 963.21,-454.88 978.83,-289.46 988.16,-181.49"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="990.94,-181.92 988.83,-173.71 985.36,-181.44 990.94,-181.92"/>
+<text xml:space="preserve" text-anchor="start" x="998.14" y="-334.5" font-family="Arial" font-weight="bold" font-size="9.00">all_processors_failed</text>
+<text xml:space="preserve" text-anchor="start" x="986.57" y="-317.6" font-family="Arial" font-size="8.00">available_processors.count == 0</text>
+</g>
+<!-- Capturing -->
+<g id="node10" class="node">
+<title>Capturing</title>
+<path fill="#e0f2f1" stroke="#00897b" d="M924.46,-399.4C924.46,-399.4 721.54,-399.4 721.54,-399.4 715.54,-399.4 709.54,-393.4 709.54,-387.4 709.54,-387.4 709.54,-269.4 709.54,-269.4 709.54,-263.4 715.54,-257.4 721.54,-257.4 721.54,-257.4 924.46,-257.4 924.46,-257.4 930.46,-257.4 936.46,-263.4 936.46,-269.4 936.46,-269.4 936.46,-387.4 936.46,-387.4 936.46,-393.4 930.46,-399.4 924.46,-399.4"/>
+<text xml:space="preserve" text-anchor="start" x="799.39" y="-381.4" font-family="Arial" font-weight="bold" font-size="10.00">Capturing</text>
+<text xml:space="preserve" text-anchor="start" x="723.54" y="-358.4" font-family="Arial" font-size="10.00">entry / executeCapture()</text>
+<text xml:space="preserve" text-anchor="start" x="723.54" y="-336.4" font-family="Arial" font-size="10.00">entry / updateLedgerEntry()</text>
+<text xml:space="preserve" text-anchor="start" x="723.54" y="-314.4" font-family="Arial" font-size="10.00">entry / scheduleTimeout('capture_exec', 90s)</text>
+<text xml:space="preserve" text-anchor="start" x="723.54" y="-292.4" font-family="Arial" font-size="10.00">exit / clearTimeout('capture_exec')</text>
+<text xml:space="preserve" text-anchor="start" x="723.54" y="-270.4" font-family="Arial" font-size="10.00">exit / reconcileAmounts()</text>
+</g>
+<!-- RequiresCapture&#45;&gt;Capturing -->
+<g id="edge17" class="edge">
+<title>RequiresCapture-&gt;Capturing</title>
+<path fill="none" stroke="#607d8b" d="M655.01,-500.2C665.65,-477.04 679.01,-452.62 694.9,-432.4 702.07,-423.28 710.19,-414.46 718.78,-406.08"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="720.46,-408.34 724.33,-400.8 716.61,-404.28 720.46,-408.34"/>
+<text xml:space="preserve" text-anchor="start" x="728.69" y="-471.3" font-family="Arial" font-weight="bold" font-size="9.00">capture_requested</text>
+<text xml:space="preserve" text-anchor="start" x="723.7" y="-454.4" font-family="Arial" font-size="8.00">capture_amount &gt; 0 AND</text>
+<text xml:space="preserve" text-anchor="start" x="698.9" y="-438.8" font-family="Arial" font-size="8.00">capture_amount &lt;= amount_capturable</text>
+</g>
+<!-- RequiresCapture&#45;&gt;Canceled -->
+<g id="edge24" class="edge">
+<title>RequiresCapture-&gt;Canceled</title>
+<path fill="none" stroke="#607d8b" d="M546.58,-500.08C541.4,-494.18 536.34,-488.25 531.54,-482.4 514.24,-461.33 513.98,-452.89 496,-432.4 492.75,-428.7 489.38,-424.98 485.92,-421.28"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="488.2,-419.61 480.66,-415.73 484.13,-423.46 488.2,-419.61"/>
+<text xml:space="preserve" text-anchor="start" x="561.01" y="-463.5" font-family="Arial" font-weight="bold" font-size="9.00">timeout_expired</text>
+<text xml:space="preserve" text-anchor="start" x="535.54" y="-446.6" font-family="Arial" font-size="8.00">timeout_type == 'capture_window'</text>
+</g>
+<!-- RequiresCapture&#45;&gt;Canceled -->
+<g id="edge31" class="edge">
+<title>RequiresCapture-&gt;Canceled</title>
+<path fill="none" stroke="#e53935" stroke-dasharray="5,2" d="M515.55,-500.08C509.72,-494.34 504.15,-488.42 499,-482.4 482.44,-463.05 485.45,-453.38 471,-432.4 468.67,-429.02 466.25,-425.61 463.77,-422.2"/>
+<polygon fill="#e53935" stroke="#e53935" points="466.16,-420.72 459.15,-415.96 461.66,-424.05 466.16,-420.72"/>
+</g>
+<!-- Capturing&#45;&gt;RequiresCapture -->
+<g id="edge19" class="edge">
+<title>Capturing-&gt;RequiresCapture</title>
+<path fill="none" stroke="#607d8b" d="M852.19,-399.76C858.99,-427.75 859.99,-458.82 843,-482.4 828.21,-502.92 812.4,-490.78 789,-500.4 776.35,-505.6 763.32,-511.35 750.39,-517.3"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="749.35,-514.7 743.28,-520.61 751.72,-519.77 749.35,-514.7"/>
+<text xml:space="preserve" text-anchor="start" x="872.48" y="-463.5" font-family="Arial" font-weight="bold" font-size="9.00">capture_failed</text>
+<text xml:space="preserve" text-anchor="start" x="860.77" y="-446.6" font-family="Arial" font-size="8.00">error_type == 'retryable'</text>
+</g>
+<!-- Capturing&#45;&gt;Succeeded -->
+<g id="edge18" class="edge">
+<title>Capturing-&gt;Succeeded</title>
+<path fill="none" stroke="#607d8b" d="M924.59,-257.09C933.07,-251.93 941.61,-246.97 950,-242.4 1019.3,-204.65 1043.57,-209.5 1113,-172 1120.88,-167.75 1128.89,-163.16 1136.88,-158.39"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="1138.15,-160.89 1143.55,-154.36 1135.25,-156.1 1138.15,-160.89"/>
+<text xml:space="preserve" text-anchor="start" x="1080.04" y="-213.3" font-family="Arial" font-weight="bold" font-size="9.00">capture_succeeded</text>
+<text xml:space="preserve" text-anchor="start" x="1084.14" y="-196.4" font-family="Arial" font-size="8.00">captured_amount &gt; 0</text>
+</g>
+<!-- Capturing&#45;&gt;Failed -->
+<g id="edge20" class="edge">
+<title>Capturing-&gt;Failed</title>
+<path fill="none" stroke="#607d8b" d="M831.65,-257.21C836.84,-234.39 845.15,-209.85 858.45,-190 864.87,-180.42 872.49,-171.38 880.8,-162.94"/>
+<polygon fill="#607d8b" stroke="#607d8b" points="882.75,-164.95 886.51,-157.36 878.83,-160.94 882.75,-164.95"/>
+<text xml:space="preserve" text-anchor="start" x="877.71" y="-213.3" font-family="Arial" font-weight="bold" font-size="9.00">capture_failed</text>
+<text xml:space="preserve" text-anchor="start" x="862.45" y="-196.4" font-family="Arial" font-size="8.00">error_type == 'permanent'</text>
+</g>
+<!-- legend -->
+<g id="node14" class="node">
+<title>legend</title>
+<polygon fill="#fafafa" stroke="none" points="218.23,-2161 218.23,-2477 425.77,-2477 425.77,-2161 218.23,-2161"/>
+<text xml:space="preserve" text-anchor="start" x="260.04" y="-2461" font-family="Arial" font-weight="bold" font-size="10.00">Payment Intent v2 Legend</text>
+<polygon fill="#e8eaf6" stroke="none" points="221.23,-2428 221.23,-2450 295.71,-2450 295.71,-2428 221.23,-2428"/>
+<text xml:space="preserve" text-anchor="start" x="246.8" y="-2436" font-family="Arial" font-size="10.00">Initial</text>
+<text xml:space="preserve" text-anchor="start" x="321.33" y="-2436" font-family="Arial" font-size="10.00">Payment creation</text>
+<polygon fill="#fff3e0" stroke="none" points="221.23,-2404 221.23,-2426 295.71,-2426 295.71,-2404 221.23,-2404"/>
+<text xml:space="preserve" text-anchor="start" x="241.8" y="-2412" font-family="Arial" font-size="10.00">Waiting</text>
+<text xml:space="preserve" text-anchor="start" x="302.71" y="-2412" font-family="Arial" font-size="10.00">Awaiting payment method</text>
+<polygon fill="#f3e5f5" stroke="none" points="221.23,-2380 221.23,-2402 295.71,-2402 295.71,-2380 221.23,-2380"/>
+<text xml:space="preserve" text-anchor="start" x="244.02" y="-2388" font-family="Arial" font-size="10.00">Ready</text>
+<text xml:space="preserve" text-anchor="start" x="309.94" y="-2388" font-family="Arial" font-size="10.00">Ready for confirmation</text>
+<polygon fill="#fff8e1" stroke="none" points="221.23,-2356 221.23,-2378 295.71,-2378 295.71,-2356 221.23,-2356"/>
+<text xml:space="preserve" text-anchor="start" x="235.68" y="-2364" font-family="Arial" font-size="10.00">Assessing</text>
+<text xml:space="preserve" text-anchor="start" x="326.33" y="-2364" font-family="Arial" font-size="10.00">Risk evaluation</text>
+<polygon fill="#e8f5e8" stroke="none" points="221.23,-2332 221.23,-2354 295.71,-2354 295.71,-2332 221.23,-2332"/>
+<text xml:space="preserve" text-anchor="start" x="244.57" y="-2340" font-family="Arial" font-size="10.00">Action</text>
+<text xml:space="preserve" text-anchor="start" x="314.11" y="-2340" font-family="Arial" font-size="10.00">Customer interaction</text>
+<polygon fill="#e1f5fe" stroke="none" points="221.23,-2308 221.23,-2330 295.71,-2330 295.71,-2308 221.23,-2308"/>
+<text xml:space="preserve" text-anchor="start" x="233.73" y="-2316" font-family="Arial" font-size="10.00">Processing</text>
+<text xml:space="preserve" text-anchor="start" x="310.22" y="-2316" font-family="Arial" font-size="10.00">Settlement in progress</text>
+<polygon fill="#fff9c4" stroke="none" points="221.23,-2284 221.23,-2306 295.71,-2306 295.71,-2284 221.23,-2284"/>
+<text xml:space="preserve" text-anchor="start" x="246.52" y="-2292" font-family="Arial" font-size="10.00">Retry</text>
+<text xml:space="preserve" text-anchor="start" x="316.05" y="-2292" font-family="Arial" font-size="10.00">Fallback processing</text>
+<polygon fill="#f1f8e9" stroke="none" points="221.23,-2260 221.23,-2282 295.71,-2282 295.71,-2260 221.23,-2260"/>
+<text xml:space="preserve" text-anchor="start" x="242.07" y="-2268" font-family="Arial" font-size="10.00">Manual</text>
+<text xml:space="preserve" text-anchor="start" x="306.04" y="-2268" font-family="Arial" font-size="10.00">Manual capture required</text>
+<polygon fill="#e0f2f1" stroke="none" points="221.23,-2236 221.23,-2258 295.71,-2258 295.71,-2236 221.23,-2236"/>
+<text xml:space="preserve" text-anchor="start" x="236.51" y="-2244" font-family="Arial" font-size="10.00">Executing</text>
+<text xml:space="preserve" text-anchor="start" x="319.66" y="-2244" font-family="Arial" font-size="10.00">Capture execution</text>
+<text xml:space="preserve" text-anchor="start" x="226.23" y="-2220" font-family="Arial" font-size="10.00">Double Border</text>
+<text xml:space="preserve" text-anchor="start" x="334.67" y="-2220" font-family="Arial" font-size="10.00">Final states</text>
+<text xml:space="preserve" text-anchor="start" x="234.01" y="-2196" font-family="Arial" font-size="10.00">Solid Lines</text>
+<text xml:space="preserve" text-anchor="start" x="318.84" y="-2196" font-family="Arial" font-size="10.00">Primary transitions</text>
+<text xml:space="preserve" text-anchor="start" x="227.89" y="-2172" font-family="Arial" font-size="10.00">Dashed Lines</text>
+<text xml:space="preserve" text-anchor="start" x="319.1" y="-2172" font-family="Arial" font-size="10.00">Cancellation paths</text>
+<polygon fill="none" stroke="black" points="218.23,-2161 218.23,-2477 425.77,-2477 425.77,-2161 218.23,-2161"/>
+</g>
+</g>
+</svg>
