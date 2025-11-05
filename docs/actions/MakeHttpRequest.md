@@ -1,6 +1,6 @@
-# MakeHttpRequest Action
+# MakeHttpRequestAction Action
 
-The `MakeHttpRequest` action is a highly customizable HTTP client for the Xavante Workflow Engine, built on top of Guzzle HTTP client. It supports dry-run mode, extensive configuration options, and comprehensive error handling.
+The `MakeHttpRequestAction` action is a highly customizable HTTP client for the Xavante Workflow Engine, built on top of Guzzle HTTP client. It supports dry-run mode, extensive configuration options, and comprehensive error handling.
 
 ## Features
 
@@ -17,9 +17,9 @@ The `MakeHttpRequest` action is a highly customizable HTTP client for the Xavant
 ## Basic Usage
 
 ```php
-use Xavante\Actions\MakeHttpRequest;
+use Xavante\Actions\MakeHttpRequestAction;
 
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 
 // Configure the request
 $httpAction->configure([
@@ -301,11 +301,11 @@ try {
 
 ## Integration with Workflows
 
-The `MakeHttpRequest` action is designed to integrate seamlessly with Xavante workflows:
+The `MakeHttpRequestAction` action is designed to integrate seamlessly with Xavante workflows:
 
 ```php
 // In a workflow state
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 $httpAction->configure([
     'url' => 'https://api.external-service.com/webhook',
     'method' => 'POST',

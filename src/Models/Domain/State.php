@@ -2,6 +2,8 @@
 
 namespace Xavante\Models\Domain;
 
+use Xavante\Actions\Actionable;
+use Xavante\Models\Types\Containers\Actions;
 use Xavante\Models\Types\Id;
 use Xavante\Models\Types\Name;
 
@@ -22,6 +24,10 @@ class State implements \JsonSerializable
      */
     public readonly Name $name;
 
+
+    protected Actions $entryActions;
+    protected Actions $exitActions;
+
     /**
      * @param string|null $id
      * @param string $name
@@ -30,6 +36,8 @@ class State implements \JsonSerializable
     {
         $this->id = new Id($id);
         $this->name = new Name($name);
+        $this->entryActions = new Actions();
+        $this->exitActions = new Actions();
     }
 
 
@@ -55,6 +63,27 @@ class State implements \JsonSerializable
             id: $data['id'] ?? null,
             name: $data['name'] ?? ''
         );
+    }
+
+
+    public function getEntryActions(): Actions
+    {
+        return $this->entryActions;
+    }
+
+    public function getExitActions(): Actions
+    {
+        return $this->exitActions;
+    }
+
+    public function addEntryAction(Actionable $action): void
+    {
+        $this->entryActions->addItem($action);
+    }
+
+    public function addExitAction(Actionable $action): void
+    {
+        $this->exitActions->addItem($action);
     }
 
 }

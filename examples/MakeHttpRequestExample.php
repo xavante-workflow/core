@@ -1,16 +1,16 @@
 <?php
 
 /**
- * Example usage of the MakeHttpRequest action
+ * Example usage of the MakeHttpRequestAction action
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Xavante\Actions\MakeHttpRequest;
+use Xavante\Actions\MakeHttpRequestAction;
 
 // Example 1: Simple GET request
 echo "=== Example 1: Simple GET Request ===\n";
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 $httpAction->configure([
     'url' => 'https://jsonplaceholder.typicode.com/posts/1',
     'method' => 'GET'
@@ -33,7 +33,7 @@ echo "\n";
 
 // Example 2: POST request with JSON data
 echo "=== Example 2: POST Request with JSON ===\n";
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 $httpAction->configure([
     'url' => 'https://jsonplaceholder.typicode.com/posts',
     'method' => 'POST',
@@ -62,7 +62,7 @@ echo "\n";
 
 // Example 3: Dry run mode
 echo "=== Example 3: Dry Run Mode ===\n";
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 $httpAction->configure([
     'url' => 'https://api.example.com/sensitive-operation',
     'method' => 'DELETE',
@@ -81,7 +81,7 @@ echo "\n";
 
 // Example 4: Request with authentication and custom headers
 echo "=== Example 4: Request with Authentication ===\n";
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 $httpAction->configure([
     'url' => 'https://jsonplaceholder.typicode.com/posts',
     'method' => 'GET',
@@ -109,7 +109,7 @@ echo "\n";
 
 // Example 5: Runtime configuration override
 echo "=== Example 5: Runtime Configuration Override ===\n";
-$httpAction = new MakeHttpRequest();
+$httpAction = new MakeHttpRequestAction();
 
 // Initial configuration
 $httpAction->configure([

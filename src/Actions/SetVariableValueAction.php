@@ -2,6 +2,7 @@
 
 namespace Xavante\Actions;
 
+use Xavante\Models\Runtime\Process;
 use Xavante\Models\Types\Containers\Variables;
 use Xavante\Models\Types\Description;
 use Xavante\Models\Types\Id;
@@ -28,9 +29,9 @@ class SetVariableValueAction extends ActionBase
      * @param string $variablePath
      * @param mixed $value
      */
-    public function __construct(?string $id,?string $description,string $variablePath, mixed $value)
+    public function __construct(?string $description,string $variablePath, mixed $value)
     {
-        $this->id = new Id($id);
+        parent::__construct();
         $this->description = new Description($description);
         $this->variablePath = $variablePath;
         $this->value = $value;
@@ -50,12 +51,15 @@ class SetVariableValueAction extends ActionBase
      * @param Variables $variables
      * @return void
      */
-    public function execute(mixed ...$args): void
+    public function execute(Process $process, mixed ...$args): void
     {
 
-        $workflow = $this->getWorkflowInstance();
+        parent::execute($process, ...$args);
+
+        // $workflow = $this->getWorkflowInstance();
         // Should have access to WF container to look bythe variable path and set the value
 
+        $process->setVariableValue($this->variablePath, $this->value);
 
         // $variable = $args[0] ?? null;
 

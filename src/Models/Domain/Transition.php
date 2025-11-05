@@ -137,4 +137,10 @@ class Transition implements \JsonSerializable
             toStateId: $data['toStateId'] ?? ''
         );
     }    
+
+
+    public function getConditions(): Conditions
+    {
+        return $this->conditions;
+    }
 }

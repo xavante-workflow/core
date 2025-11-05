@@ -22,9 +22,9 @@ class Workflow implements \JsonSerializable
      */
     public readonly Id $id;
 
-    public function jsonSerialize(): array
+    public function jsonSerialize(): string
     {
-        return [
+        return json_encode([
             'id' => (string) $this->id,
             'name' => (string) $this->name,
             'description' => (string) $this->description,
@@ -32,7 +32,7 @@ class Workflow implements \JsonSerializable
             'transitions' => $this->transitions->jsonSerialize(),
             'variables' => $this->variables->jsonSerialize(),
             'events' => $this->events->jsonSerialize(),
-        ];
+        ]);
     }
 
     /**
@@ -69,6 +69,7 @@ class Workflow implements \JsonSerializable
      */
     public readonly Events $events;
 
+    protected array $initialStatesIds = [];
 
     /**
      * @param array $data
@@ -118,4 +119,19 @@ class Workflow implements \JsonSerializable
     }
 
 
+    /**
+     * @param array $initialStatesIds
+     */
+    public function setInitialStatesIds(array $initialStatesIds): void
+    {
+        $this->initialStatesIds = $initialStatesIds;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getInitialStatesIds(): array
+    {
+        return $this->initialStatesIds;
+    }
 }
