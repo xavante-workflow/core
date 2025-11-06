@@ -12,12 +12,16 @@
         <testsuite name="Simple Workflow Tests">
             <directory>tests/Integration/UseCases/SimpleWorker</directory>
         </testsuite>
+        <testsuite name="Approval With Timer Tests">
+            <directory>tests/Integration/UseCases/ApprovalWithTimer</directory>
+        </testsuite>
         <testsuite name="Unit Tests">
             <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="Integration Tests">
             <directory>tests/Integration</directory>
             <exclude>tests/Integration/UseCases/SimpleWorker</exclude>
+            <exclude>tests/Integration/UseCases/ApprovalWithTimer</exclude>
         </testsuite>
     </testsuites>
     

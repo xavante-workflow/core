@@ -1,0 +1,407 @@
+digraph PaymentIntent {
+  rankdir=TB;
+  labelloc="t";
+  label=<<TABLE BORDER="0">
+    <TR><TD><FONT POINT-SIZE="16"><B>Payment Intent Workflow</B></FONT></TD></TR>
+    <TR><TD><FONT POINT-SIZE="12">Xavante Workflow Engine - Payment Processing State Machine</FONT></TD></TR>
+    <TR><TD><FONT POINT-SIZE="10">Handles: Authorization | Risk Checks | 3DS/SCA | Manual/Auto Capture | Timeouts</FONT></TD></TR>
+  </TABLE>>;
+  fontsize=12;
+  compound=true;
+
+  // Node styles
+  node [fontname="Arial", fontsize=10];
+  edge [fontname="Arial", fontsize=9, color="#607D8B", arrowsize=0.8];
+
+  // Start node
+  start [shape=point, width=0.3, color="#4CAF50"];
+
+  // States with detailed actions
+  Created [
+    shape=box, style="rounded,filled", fillcolor="#E3F2FD", color="#1976D2",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>Created</B></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Initial State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / generateClientSecret()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('created')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('payment_intent.created')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  RequiresPaymentMethod [
+    shape=box, style="rounded,filled", fillcolor="#FFF3E0", color="#F57C00",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>RequiresPaymentMethod</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('requires_payment_method')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / clearNextAction()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('requires_pm')</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / validatePaymentMethod()</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  RequiresConfirmation [
+    shape=box, style="rounded,filled", fillcolor="#F3E5F5", color="#7B1FA2",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>RequiresConfirmation</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('requires_confirmation')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('pm_attached')</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / prepareAuthRequest()</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  RiskEvaluation [
+    shape=box, style="rounded,filled", fillcolor="#FFF8E1", color="#F9A825",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>RiskEvaluation</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('risk_evaluation')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / callRiskAPI()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / scheduleTimeout('risk_timeout', 30s)</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / clearTimeout('risk_timeout')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  RequiresAction [
+    shape=box, style="rounded,filled", fillcolor="#E8F5E8", color="#388E3C",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>RequiresAction</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('requires_action')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setNextAction('3ds_redirect')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / scheduleTimeout('action_timeout', 900s)</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('requires_action')</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / clearTimeout('action_timeout')</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / clearNextAction()</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Processing [
+    shape=box, style="rounded,filled", fillcolor="#E1F5FE", color="#0277BD",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>Processing</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('processing')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / incrementAttempt()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / callAuthAPI()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / scheduleTimeout('auth_timeout', 300s)</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('processing')</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / clearTimeout('auth_timeout')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  RequiresCapture [
+    shape=box, style="rounded,filled", fillcolor="#F1F8E9", color="#689F38",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>RequiresCapture</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('requires_capture')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setAmountCapturable(amount)</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / scheduleTimeout('capture_timeout', 7d)</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('requires_capture')</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / clearTimeout('capture_timeout')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Capturing [
+    shape=box, style="rounded,filled", fillcolor="#E0F2F1", color="#00796B",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>Capturing</B></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('capturing')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / callCaptureAPI()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / scheduleTimeout('capture_exec_timeout', 60s)</TD></TR>
+        <TR><TD ALIGN="LEFT">exit / clearTimeout('capture_exec_timeout')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  // Final States
+  Succeeded [
+    shape=box, style="rounded,filled", fillcolor="#E8F5E8", color="#4CAF50",
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>Succeeded</B></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Final State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('succeeded')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / recordLedgerEntry()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('succeeded')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / notifyMerchant('payment_success')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Canceled [
+    shape=box, style="rounded,filled", fillcolor="#FFEBEE", color="#F44336",
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>Canceled</B></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Final State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('canceled')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / voidAuthorization()</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('canceled')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / notifyMerchant('payment_canceled')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  Failed [
+    shape=box, style="rounded,filled", fillcolor="#FFF3E0", color="#FF9800",
+    peripheries=2,
+    label=<
+      <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="4">
+        <TR><TD><B>Failed</B></TD></TR>
+        <TR><TD ALIGN="LEFT"><I>Final State</I></TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setStatus('failed')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / setErrorCode('max_attempts_exceeded')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / publishWebhook('failed')</TD></TR>
+        <TR><TD ALIGN="LEFT">entry / notifyMerchant('payment_failed')</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  // Transitions
+  start -> Created;
+
+  // From Created
+  Created -> RequiresPaymentMethod [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>create_intent</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">always</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From RequiresPaymentMethod
+  RequiresPaymentMethod -> RequiresConfirmation [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>attach_payment_method</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">payment_method_id exists</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresPaymentMethod -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>cancel</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">always</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From RequiresConfirmation
+  RequiresConfirmation -> RiskEvaluation [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>confirm_intent</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">payment_method_id exists</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresConfirmation -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>cancel</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">always</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From RiskEvaluation
+  RiskEvaluation -> RequiresAction [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>risk_approved_with_3ds</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">risk_level == 'medium' AND</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">requires_3ds == true</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RiskEvaluation -> Processing [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>risk_approved</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">risk_level == 'low' AND</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">requires_3ds == false</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RiskEvaluation -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>risk_blocked</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">risk_level == 'high'</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RiskEvaluation -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>timeout</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">risk evaluation timeout</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From RequiresAction
+  RequiresAction -> Processing [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>authentication_succeeded</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">3ds_result == 'authenticated'</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresAction -> RequiresPaymentMethod [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>authentication_failed</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">3ds_result == 'failed' AND</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">attempt_count &lt; max_attempts</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresAction -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>timeout</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">action timeout exceeded</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresAction -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>cancel</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">customer cancels</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From Processing
+  Processing -> RequiresCapture [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>authorization_succeeded</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">capture_method == 'manual'</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Processing -> Succeeded [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>authorization_succeeded</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">capture_method == 'automatic'</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Processing -> RequiresPaymentMethod [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>authorization_failed</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">error_code in ['card_declined',</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">'insufficient_funds'] AND</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">attempt_count &lt; max_attempts</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Processing -> Failed [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>authorization_failed</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">attempt_count &gte; max_attempts OR</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">error_code in ['do_not_honor',</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">'invalid_card']</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Processing -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>timeout</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">authorization timeout</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Processing -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>cancel</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">merchant cancels</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From RequiresCapture
+  RequiresCapture -> Capturing [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>capture</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">capture_amount &gt; 0 AND</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">capture_amount &lte; amount_capturable</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresCapture -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>cancel</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">void authorization</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  RequiresCapture -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>timeout</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">capture window expired</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // From Capturing
+  Capturing -> Succeeded [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>capture_succeeded</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">always</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Capturing -> RequiresCapture [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>capture_failed</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">error_code == 'network_error' OR</FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">error_code == 'temporary_failure'</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Capturing -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>capture_failed</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">error_code == 'authorization_expired'</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  Capturing -> Canceled [
+    label=<<TABLE BORDER="0">
+      <TR><TD><B>timeout</B></TD></TR>
+      <TR><TD><FONT POINT-SIZE="8">capture execution timeout</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  // Global transitions (from any non-final state)
+  RequiresPaymentMethod -> Canceled [style=dashed, color="#F44336"];
+  RequiresConfirmation -> Canceled [style=dashed, color="#F44336"];
+  RiskEvaluation -> Canceled [style=dashed, color="#F44336"];
+  RequiresAction -> Canceled [style=dashed, color="#F44336"];
+  Processing -> Canceled [style=dashed, color="#F44336"];
+  RequiresCapture -> Canceled [style=dashed, color="#F44336"];
+  Capturing -> Canceled [style=dashed, color="#F44336"];
+
+  // Legend
+  legend [
+    shape=none,
+    margin=0,
+    label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLPADDING="5" BGCOLOR="#FAFAFA">
+        <TR><TD COLSPAN="2"><B>Legend</B></TD></TR>
+        <TR><TD BGCOLOR="#E3F2FD">Initial</TD><TD>Entry point</TD></TR>
+        <TR><TD BGCOLOR="#FFF3E0">Waiting</TD><TD>Awaiting input</TD></TR>
+        <TR><TD BGCOLOR="#F3E5F5">Ready</TD><TD>Ready for action</TD></TR>
+        <TR><TD BGCOLOR="#FFF8E1">Evaluating</TD><TD>Processing/Checking</TD></TR>
+        <TR><TD BGCOLOR="#E8F5E8">Action Required</TD><TD>Customer action</TD></TR>
+        <TR><TD BGCOLOR="#E1F5FE">Processing</TD><TD>API calls in progress</TD></TR>
+        <TR><TD BGCOLOR="#F1F8E9">Manual Step</TD><TD>Manual capture</TD></TR>
+        <TR><TD BGCOLOR="#E0F2F1">Executing</TD><TD>Capture in progress</TD></TR>
+        <TR><TD>Double Border</TD><TD>Final state</TD></TR>
+        <TR><TD>Dashed Lines</TD><TD>Global cancel</TD></TR>
+      </TABLE>
+    >
+  ];
+
+  {rank=same; legend}
+}
