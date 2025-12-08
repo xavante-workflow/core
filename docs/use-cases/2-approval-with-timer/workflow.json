@@ -1,0 +1,172 @@
+{
+    "_id": {
+        "$oid": "65a1b1c2d3e4f50611223355"
+    },
+    "name": "Approve Request with SLA",
+    "description": "Approval workflow that auto-expires after 48 hours if no decision.",
+    "ownerId": "019992f8-f3df-7036-8c46-ff2ef54be0e9",
+    "version": 1,
+    "status": "active",
+    "initialStateId": "state:pending",
+    "states": {
+        "state:pending": {
+            "id": "state:pending",
+            "name": "Pending Approval",
+            "entryTasks": [
+                "task:audit-created",
+                "task:schedule-approval-timer"
+            ],
+            "exitTasks": [
+                "task:cancel-approval-timer"
+            ]
+        },
+        "state:approved": {
+            "id": "state:approved",
+            "name": "Approved",
+            "entryTasks": [
+                "task:notify-approved"
+            ],
+            "exitTasks": []
+        },
+        "state:expired": {
+            "id": "state:expired",
+            "name": "Expired",
+            "entryTasks": [
+                "task:notify-expired",
+                "task:audit-expired"
+            ],
+            "exitTasks": []
+        }
+    },
+    "events": {
+        "event:approve": {
+            "id": "event:approve",
+            "name": "Approve",
+            "origin": "external",
+            "correlation": {
+                "keys": [
+                    "requestId"
+                ]
+            }
+        },
+        "event:approval_timeout": {
+            "id": "event:approval_timeout",
+            "name": "Approval Timeout",
+            "origin": "timer",
+            "timer": {
+                "type": "duration",
+                "value": "PT48H",
+                "policy": "fixed-delay"
+            },
+            "correlation": {
+                "keys": [
+                    "requestId"
+                ]
+            }
+        }
+    },
+    "transitions": [
+        {
+            "id": "trans:pending_to_approved",
+            "from": "state:pending",
+            "to": "state:approved",
+            "on": "event:approve",
+            "guards": [],
+            "actions": [
+                "task:audit-approved"
+            ],
+            "priority": 1
+        },
+        {
+            "id": "trans:pending_to_expired",
+            "from": "state:pending",
+            "to": "state:expired",
+            "on": "event:approval_timeout",
+            "guards": [],
+            "actions": [
+                "task:audit-timeout-fired"
+            ],
+            "priority": 1
+        }
+    ],
+    "tasks": {
+        "task:audit-created": {
+            "id": "task:audit-created",
+            "name": "Audit Created",
+            "description": "Record creation of the approval request",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logCreated"
+            }
+        },
+        "task:schedule-approval-timer": {
+            "id": "task:schedule-approval-timer",
+            "name": "Schedule Approval Timer",
+            "description": "Create a 48h timer associated with this instance",
+            "type": "timer_schedule",
+            "config": {
+                "eventId": "event:approval_timeout",
+                "duration": "PT48H",
+                "keyTemplate": "approval:{{ variables.requestId }}"
+            }
+        },
+        "task:cancel-approval-timer": {
+            "id": "task:cancel-approval-timer",
+            "name": "Cancel Approval Timer",
+            "description": "Cancel SLA timer when leaving Pending state",
+            "type": "timer_cancel",
+            "config": {
+                "keyTemplate": "approval:{{ variables.requestId }}"
+            }
+        },
+        "task:notify-approved": {
+            "id": "task:notify-approved",
+            "name": "Notify Approved",
+            "description": "Email the requester on approval",
+            "type": "email",
+            "config": {
+                "to": "{{ variables.requesterEmail }}",
+                "subject": "Your request {{ variables.requestId }} was approved",
+                "templateId": "tmpl-approve-001"
+            }
+        },
+        "task:notify-expired": {
+            "id": "task:notify-expired",
+            "name": "Notify Expired",
+            "description": "Email the requester when approval times out",
+            "type": "email",
+            "config": {
+                "to": "{{ variables.requesterEmail }}",
+                "subject": "Your request {{ variables.requestId }} expired (no action for 48h)",
+                "templateId": "tmpl-expired-001"
+            }
+        },
+        "task:audit-approved": {
+            "id": "task:audit-approved",
+            "name": "Audit Approved",
+            "description": "Record approval",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logApproved"
+            }
+        },
+        "task:audit-expired": {
+            "id": "task:audit-expired",
+            "name": "Audit Expired",
+            "description": "Record expiration",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logExpired"
+            }
+        },
+        "task:audit-timeout-fired": {
+            "id": "task:audit-timeout-fired",
+            "name": "Audit Timeout Fired",
+            "description": "Record that SLA timer fired",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logTimerFired"
+            }
+        }
+    }
+}

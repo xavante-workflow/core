@@ -1,0 +1,206 @@
+{
+    "_id": {
+        "$oid": "65a1b1c2d3e4f50611223344"
+    },
+    "name": "Approve Request",
+    "description": "Simple approval workflow with approve/reject events.",
+    "ownerId": "019992f8-f3df-7036-8c46-ff2ef54be0e9",
+    "version": 1,
+    "status": "active",
+    "initialStateId": "state:submitted",
+    "variablesSchema": {
+        "type": "object",
+        "properties": {
+            "requestId": {
+                "type": "string"
+            },
+            "requesterEmail": {
+                "type": "string"
+            },
+            "approverRole": {
+                "type": "string"
+            },
+            "comments": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "requestId"
+        ]
+    },
+    "states": {
+        "state:submitted": {
+            "id": "state:submitted",
+            "name": "Submitted",
+            "entryTasks": [
+                "task:audit-created"
+            ],
+            "exitTasks": []
+        },
+        "state:approved": {
+            "id": "state:approved",
+            "name": "Approved",
+            "entryTasks": [
+                "task:notify-approved",
+                "task:audit-approved"
+            ],
+            "exitTasks": []
+        },
+        "state:rejected": {
+            "id": "state:rejected",
+            "name": "Rejected",
+            "entryTasks": [
+                "task:notify-rejected",
+                "task:audit-rejected"
+            ],
+            "exitTasks": []
+        }
+    },
+    "events": {
+        "event:approve": {
+            "id": "event:approve",
+            "name": "Approve",
+            "origin": "external",
+            "correlation": {
+                "keys": [
+                    "requestId"
+                ]
+            },
+            "payloadSchema": {
+                "type": "object",
+                "properties": {
+                    "approvedBy": {
+                        "type": "string"
+                    },
+                    "approverRole": {
+                        "type": "string"
+                    },
+                    "comments": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "event:reject": {
+            "id": "event:reject",
+            "name": "Reject",
+            "origin": "external",
+            "correlation": {
+                "keys": [
+                    "requestId"
+                ]
+            },
+            "payloadSchema": {
+                "type": "object",
+                "properties": {
+                    "rejectedBy": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "transitions": [
+        {
+            "id": "trans:submit_to_approved",
+            "from": "state:submitted",
+            "to": "state:approved",
+            "on": "event:approve",
+            "guards": [
+                {
+                    "id": "guard:is_manager",
+                    "type": "expression",
+                    "lang": "php",
+                    "expr": "in_array($event['approverRole'] ?? '', ['manager','director'], true)"
+                }
+            ],
+            "actions": [
+                "task:audit-transition-approve"
+            ],
+            "priority": 1
+        },
+        {
+            "id": "trans:submit_to_rejected",
+            "from": "state:submitted",
+            "to": "state:rejected",
+            "on": "event:reject",
+            "guards": [],
+            "actions": [
+                "task:audit-transition-reject"
+            ],
+            "priority": 1
+        }
+    ],
+    "tasks": {
+        "task:audit-created": {
+            "id": "task:audit-created",
+            "name": "Audit Created",
+            "description": "Write audit log when request is submitted",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logCreated"
+            }
+        },
+        "task:notify-approved": {
+            "id": "task:notify-approved",
+            "name": "Notify Approved",
+            "description": "Send email to requester on approval",
+            "type": "email",
+            "config": {
+                "to": "{{ variables.requesterEmail }}",
+                "subject": "Your request {{ variables.requestId }} was approved",
+                "templateId": "tmpl-approve-001"
+            }
+        },
+        "task:audit-approved": {
+            "id": "task:audit-approved",
+            "name": "Audit Approved",
+            "description": "Record approval details",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logApproved"
+            }
+        },
+        "task:notify-rejected": {
+            "id": "task:notify-rejected",
+            "name": "Notify Rejected",
+            "description": "Send email to requester on rejection",
+            "type": "email",
+            "config": {
+                "to": "{{ variables.requesterEmail }}",
+                "subject": "Your request {{ variables.requestId }} was rejected",
+                "templateId": "tmpl-reject-001"
+            }
+        },
+        "task:audit-rejected": {
+            "id": "task:audit-rejected",
+            "name": "Audit Rejected",
+            "description": "Record rejection details",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logRejected"
+            }
+        },
+        "task:audit-transition-approve": {
+            "id": "task:audit-transition-approve",
+            "name": "Audit Transition Approve",
+            "description": "Audit the approve transition",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logTransition"
+            }
+        },
+        "task:audit-transition-reject": {
+            "id": "task:audit-transition-reject",
+            "name": "Audit Transition Reject",
+            "description": "Audit the reject transition",
+            "type": "php_callable",
+            "config": {
+                "callable": "AppTasksAuditTask::logTransition"
+            }
+        }
+    }
+}

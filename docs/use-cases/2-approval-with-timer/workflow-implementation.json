@@ -1,0 +1,417 @@
+{
+  "metadata": {
+    "name": "approval-with-timers-v1",
+    "description": "Approval workflow with reminders, escalation, and auto-expiration",
+    "version": "1.0.0",
+    "created": "2025-11-01",
+    "implementation": "Xavante Workflow Engine - PHP",
+    "testCoverage": {
+      "totalTests": 46,
+      "testSuites": 4,
+      "assertions": "150+",
+      "coverage": "comprehensive"
+    }
+  },
+  "states": {
+    "id:draft": {
+      "id": "id:draft",
+      "name": "Draft",
+      "type": "initial",
+      "description": "Request composition and preparation state",
+      "entryActions": [],
+      "exitActions": [],
+      "timerBehavior": "none"
+    },
+    "id:pending-approval": {
+      "id": "id:pending-approval", 
+      "name": "Pending Approval",
+      "type": "intermediate",
+      "description": "Primary approval state with timer scheduling",
+      "entryActions": [
+        {
+          "type": "MakeHttpRequestAction",
+          "description": "Assign reviewer via HTTP API",
+          "config": {
+            "method": "POST",
+            "url": "https://api.company.com/assign-reviewer",
+            "headers": {"Content-Type": "application/json"},
+            "body": {
+              "requestId": "{{process.requestId}}",
+              "approver": "{{approver}}",
+              "amount": "{{amount}}"
+            },
+            "dry_run": true
+          }
+        },
+        {
+          "type": "SetVariableValueAction", 
+          "description": "Schedule Timers",
+          "config": {
+            "variablePath": "timers.scheduled",
+            "value": "true"
+          }
+        }
+      ],
+      "exitActions": [
+        {
+          "type": "SetVariableValueAction",
+          "description": "Cancel Timers", 
+          "config": {
+            "variablePath": "timers.cancelled",
+            "value": "true"
+          }
+        },
+        {
+          "type": "SetVariableValueAction",
+          "description": "Audit Exit Pending Approval",
+          "config": {
+            "variablePath": "audit.log", 
+            "value": "Exited Pending Approval State"
+          }
+        }
+      ],
+      "timerBehavior": {
+        "reminderInterval": "{{reminder.hours}} hours",
+        "escalationTimeout": "{{sla.hours}} hours",
+        "expirationTimeout": "{{expiry.days}} days"
+      }
+    },
+    "id:escalated": {
+      "id": "id:escalated",
+      "name": "Escalated", 
+      "type": "intermediate",
+      "description": "Backup approver handling with continued expiration timer",
+      "entryActions": [
+        {
+          "type": "MakeHttpRequestAction",
+          "description": "Notify escalation via HTTP API",
+          "config": {
+            "method": "POST", 
+            "url": "https://api.company.com/notify-escalation",
+            "headers": {"Content-Type": "application/json"},
+            "body": {
+              "requestId": "{{process.requestId}}",
+              "originalApprover": "{{approver}}",
+              "backupApprover": "{{backupApprover}}"
+            },
+            "dry_run": true
+          }
+        },
+        {
+          "type": "CopyVariableAction",
+          "description": "Reassign to Backup Approver", 
+          "config": {
+            "sourceVariablePath": "backupApprover",
+            "targetVariablePath": "current.approver"
+          }
+        }
+      ],
+      "exitActions": [],
+      "timerBehavior": {
+        "expirationTimeout": "{{expiry.days}} days"
+      }
+    },
+    "id:approved": {
+      "id": "id:approved",
+      "name": "Approved",
+      "type": "final",
+      "description": "Successful approval completion",
+      "entryActions": [],
+      "exitActions": [],
+      "timerBehavior": "none"
+    },
+    "id:rejected": {
+      "id": "id:rejected", 
+      "name": "Rejected",
+      "type": "final",
+      "description": "Explicit rejection by approver",
+      "entryActions": [],
+      "exitActions": [],
+      "timerBehavior": "none"
+    },
+    "id:auto-expired": {
+      "id": "id:auto-expired",
+      "name": "Auto Expired", 
+      "type": "final",
+      "description": "Automatic expiration after deadline",
+      "entryActions": [],
+      "exitActions": [],
+      "timerBehavior": "none"
+    }
+  },
+  "events": {
+    "id:submit": {
+      "id": "id:submit",
+      "name": "Submit for Approval",
+      "origin": "external",
+      "description": "Start approval process",
+      "correlation": ["requestId"]
+    },
+    "id:approve": {
+      "id": "id:approve", 
+      "name": "Approve Request",
+      "origin": "external",
+      "description": "Explicit approval by user",
+      "correlation": ["requestId", "approverId"]
+    },
+    "id:reject": {
+      "id": "id:reject",
+      "name": "Reject Request", 
+      "origin": "external",
+      "description": "Explicit rejection by user",
+      "correlation": ["requestId", "approverId"]
+    },
+    "id:reminder-tick": {
+      "id": "id:reminder-tick",
+      "name": "Reminder Notification",
+      "origin": "timer",
+      "description": "Periodic reminder (does not change state)",
+      "interval": "{{reminder.hours}} hours"
+    },
+    "id:escalate": {
+      "id": "id:escalate",
+      "name": "Escalate to Backup",
+      "origin": "timer", 
+      "description": "SLA breach escalation",
+      "timeout": "{{sla.hours}} hours"
+    },
+    "id:expire": {
+      "id": "id:expire",
+      "name": "Auto Expire Request",
+      "origin": "timer",
+      "description": "Hard deadline expiration", 
+      "timeout": "{{expiry.days}} days"
+    }
+  },
+  "transitions": [
+    {
+      "id": "trans:submit", 
+      "name": "Submit for Approval",
+      "from": "id:draft",
+      "to": "id:pending-approval", 
+      "event": "id:submit",
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "submitted"
+        }
+      ]
+    },
+    {
+      "id": "trans:approve-from-pending",
+      "name": "Approve from Pending", 
+      "from": "id:pending-approval",
+      "to": "id:approved",
+      "event": "id:approve",
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals", 
+          "value": "approved"
+        }
+      ]
+    },
+    {
+      "id": "trans:reject-from-pending",
+      "name": "Reject from Pending",
+      "from": "id:pending-approval", 
+      "to": "id:rejected",
+      "event": "id:reject",
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "rejected" 
+        }
+      ]
+    },
+    {
+      "id": "trans:escalate-from-pending",
+      "name": "Escalate from Pending",
+      "from": "id:pending-approval",
+      "to": "id:escalated",
+      "event": "id:escalate", 
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "escalated"
+        }
+      ]
+    },
+    {
+      "id": "trans:expire-from-pending", 
+      "name": "Expire from Pending",
+      "from": "id:pending-approval",
+      "to": "id:auto-expired",
+      "event": "id:expire",
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "expired"
+        }
+      ]
+    },
+    {
+      "id": "trans:approve-from-escalated",
+      "name": "Approve from Escalated",
+      "from": "id:escalated", 
+      "to": "id:approved", 
+      "event": "id:approve",
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "approved"
+        }
+      ]
+    },
+    {
+      "id": "trans:reject-from-escalated",
+      "name": "Reject from Escalated",
+      "from": "id:escalated",
+      "to": "id:rejected",
+      "event": "id:reject", 
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "rejected"
+        }
+      ]
+    },
+    {
+      "id": "trans:expire-from-escalated",
+      "name": "Expire from Escalated", 
+      "from": "id:escalated",
+      "to": "id:auto-expired",
+      "event": "id:expire",
+      "conditions": [
+        {
+          "variable": "request.status",
+          "operator": "equals",
+          "value": "expired"
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "request.status": {
+      "name": "Request Status",
+      "type": "string", 
+      "default": "draft",
+      "description": "Controls state transitions"
+    },
+    "approver": {
+      "name": "Primary Approver",
+      "type": "string",
+      "default": "",
+      "description": "Primary approver identifier" 
+    },
+    "backupApprover": {
+      "name": "Backup Approver",
+      "type": "string",
+      "default": "",
+      "description": "Escalation target approver"
+    },
+    "current.approver": {
+      "name": "Current Approver", 
+      "type": "string",
+      "default": "",
+      "description": "Currently assigned approver"
+    },
+    "amount": {
+      "name": "Request Amount",
+      "type": "number",
+      "default": 0,
+      "description": "Request value for routing logic"
+    },
+    "sla.hours": {
+      "name": "SLA Hours",
+      "type": "number", 
+      "default": 48,
+      "description": "Hours until escalation"
+    },
+    "reminder.hours": {
+      "name": "Reminder Interval Hours",
+      "type": "number",
+      "default": 24,
+      "description": "Reminder interval in hours"
+    },
+    "expiry.days": {
+      "name": "Expiry Days",
+      "type": "number",
+      "default": 7, 
+      "description": "Days until auto-expiration"
+    },
+    "timers.scheduled": {
+      "name": "Timers Scheduled",
+      "type": "string",
+      "default": "false",
+      "description": "Timer scheduling status"
+    },
+    "timers.cancelled": {
+      "name": "Timers Cancelled", 
+      "type": "string", 
+      "default": "false",
+      "description": "Timer cancellation status"
+    },
+    "audit.log": {
+      "name": "Audit Log",
+      "type": "string",
+      "default": "",
+      "description": "Audit trail accumulator"
+    }
+  },
+  "timerSystem": {
+    "implementation": "simulation-based",
+    "deterministic": true,
+    "prioritization": ["expire", "escalate", "reminder"],
+    "edgeCaseHandling": {
+      "negativeValues": "graceful-ignore",
+      "zeroIntervals": "disabled", 
+      "boundaryCollisions": "highest-priority-wins",
+      "invalidConfigurations": "fail-safe"
+    },
+    "validation": {
+      "minimumInterval": 0,
+      "maximumValue": "PHP_INT_MAX",
+      "typeChecking": "loose-with-conversion"
+    }
+  },
+  "testFramework": {
+    "totalTests": 46,
+    "testSuites": [
+      {
+        "name": "ExecutionApprovalWithTimerTest", 
+        "tests": 9,
+        "focus": "End-to-end workflow execution"
+      },
+      {
+        "name": "TimerSystemTest",
+        "tests": 11, 
+        "focus": "Timer behavior validation"
+      },
+      {
+        "name": "EscalationScenarioTest",
+        "tests": 13,
+        "focus": "Business logic enforcement"
+      },
+      {
+        "name": "EdgeCasesAndErrorsTest", 
+        "tests": 13,
+        "focus": "Error handling and resilience"
+      }
+    ],
+    "helperFramework": "ApprovalWithTimerHelper trait",
+    "capabilities": [
+      "Timer simulation",
+      "Event triggering", 
+      "State validation",
+      "Scenario execution",
+      "Variable management"
+    ]
+  }
+}

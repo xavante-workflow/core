@@ -4,6 +4,9 @@ vendor
 *.log
 *.cache
 
+# PHPUnit
+.phpunit.cache
+build/coverage/
 
 .vscode
 .idea
