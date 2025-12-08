@@ -29,7 +29,7 @@ class SetVariableValueAction extends ActionBase
      * @param string $variablePath
      * @param mixed $value
      */
-    public function __construct(?string $description,string $variablePath, mixed $value)
+    public function __construct(?string $description, string $variablePath, mixed $value)
     {
         parent::__construct();
         $this->description = new Description($description);

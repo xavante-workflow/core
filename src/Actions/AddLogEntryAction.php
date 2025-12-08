@@ -10,6 +10,7 @@ class AddLogEntryAction extends ActionBase
 
     public function __construct(string $message)
     {
+        parent::__construct();
         $this->message = $message;
     }
     public function configure(mixed ...$args): void

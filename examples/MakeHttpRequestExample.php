@@ -7,6 +7,10 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Xavante\Actions\MakeHttpRequestAction;
+use Xavante\Models\Domain\Workflow;
+
+$workflow = new Workflow([]); // In a real scenario, this would be a properly initialized Workflow instance
+$process = new \Xavante\Models\Runtime\Process($workflow); // In a real scenario, this would be an instance of Process
 
 // Example 1: Simple GET request
 echo "=== Example 1: Simple GET Request ===\n";
@@ -17,7 +21,7 @@ $httpAction->configure([
 ]);
 
 try {
-    $httpAction->execute();
+    $httpAction->execute($process);
     
     if ($httpAction->wasSuccessful()) {
         echo "Status: " . $httpAction->getStatusCode() . "\n";
@@ -48,7 +52,7 @@ $httpAction->configure([
 ]);
 
 try {
-    $httpAction->execute();
+    $httpAction->execute($process);
     
     if ($httpAction->wasSuccessful()) {
         echo "Status: " . $httpAction->getStatusCode() . "\n";
@@ -69,7 +73,7 @@ $httpAction->configure([
     'dry_run' => true
 ]);
 
-$httpAction->execute();
+$httpAction->execute($process);
 
 if ($httpAction->isDryRun()) {
     echo "Dry run completed successfully\n";
@@ -94,7 +98,7 @@ $httpAction->configure([
 ]);
 
 try {
-    $httpAction->execute();
+    $httpAction->execute($process);
     
     if ($httpAction->wasSuccessful()) {
         echo "Status: " . $httpAction->getStatusCode() . "\n";
@@ -119,7 +123,7 @@ $httpAction->configure([
 
 // Override configuration at runtime
 try {
-    $httpAction->execute([
+    $httpAction->execute($process, [
         'url' => 'https://jsonplaceholder.typicode.com/users/1', // Override URL
         'query' => ['fields' => 'name,email'] // Add query parameters
     ]);
