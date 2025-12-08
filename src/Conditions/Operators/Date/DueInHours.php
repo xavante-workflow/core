@@ -3,6 +3,7 @@
 namespace Xavante\Conditions\Operators\Date;
 
 use Xavante\Conditions\Operators\OperatorInterface;
+use Xavante\Helpers\ConvertToDateTime;
 
 /**
  * DueInHours operator for checking if a date is due within N hours.
@@ -12,6 +13,8 @@ use Xavante\Conditions\Operators\OperatorInterface;
  */
 class DueInHours implements OperatorInterface
 {
+    use ConvertToDateTime;
+
     public function evaluate(mixed $value1, mixed $value2): bool
     {
         try {
@@ -28,21 +31,4 @@ class DueInHours implements OperatorInterface
         }
     }
 
-    private function convertToDateTime(mixed $value): \DateTime
-    {
-        if ($value instanceof \DateTime) {
-            return $value;
-        }
-        
-        if (is_numeric($value)) {
-            // Unix timestamp
-            return new \DateTime('@' . $value);
-        }
-        
-        if (is_string($value)) {
-            return new \DateTime($value);
-        }
-        
-        throw new \InvalidArgumentException('Cannot convert value to DateTime');
-    }
 }

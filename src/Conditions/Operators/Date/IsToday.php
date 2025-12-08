@@ -3,7 +3,7 @@
 namespace Xavante\Conditions\Operators\Date;
 
 use Xavante\Conditions\Operators\OperatorInterface;
-
+use Xavante\Helpers\ConvertToDateTime;
 /**
  * IsToday operator for checking if a date falls on the current day.
  * 
@@ -12,6 +12,10 @@ use Xavante\Conditions\Operators\OperatorInterface;
  */
 class IsToday implements OperatorInterface
 {
+    use ConvertToDateTime;
+
+    // TODO: Review this implementation - the $value2 parameter is unused.
+    // TODO: Consider also timezones in the comparison (future).
     public function evaluate(mixed $value1, mixed $value2): bool
     {
         try {
@@ -25,21 +29,4 @@ class IsToday implements OperatorInterface
         }
     }
 
-    private function convertToDateTime(mixed $value): \DateTime
-    {
-        if ($value instanceof \DateTime) {
-            return $value;
-        }
-        
-        if (is_numeric($value)) {
-            // Unix timestamp
-            return new \DateTime('@' . $value);
-        }
-        
-        if (is_string($value)) {
-            return new \DateTime($value);
-        }
-        
-        throw new \InvalidArgumentException('Cannot convert value to DateTime');
-    }
 }
