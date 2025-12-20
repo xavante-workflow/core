@@ -2,12 +2,12 @@ name: CI - Unit Tests
 
 on:
   pull_request:
-    branches: [ dev, main, master ]
+    branches: [ dev, main ]
   push:
-    branches: [ dev, main, master ]
+    branches: [ dev ]
 
 jobs:
-  phpunit:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
           coverage: xdebug
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
-      - name: Run PHPUnit (Unit Tests)
+      - name: Run PHPUnit Unit Tests
         run: ./vendor/bin/phpunit --testsuite="Unit Tests" --configuration=phpunit.xml
-      - name: Run PHPUnit (Usecase Tests)
+      - name: Run PHPUnit Use Case Tests
         run: ./vendor/bin/phpunit --testsuite="Use Tests" --configuration=phpunit.xml
