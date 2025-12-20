@@ -9,11 +9,8 @@
          backupGlobals="false">
     
     <testsuites>
-        <testsuite name="Simple Workflow Tests">
-            <directory>tests/Integration/UseCases/SimpleWorker</directory>
-        </testsuite>
-        <testsuite name="Approval With Timer Tests">
-            <directory>tests/Integration/UseCases/ApprovalWithTimer</directory>
+        <testsuite name="Use Cases Tests">
+            <directory>tests/Integration/UseCases</directory>
         </testsuite>
         <testsuite name="Unit Tests">
             <directory>tests/Unit</directory>
