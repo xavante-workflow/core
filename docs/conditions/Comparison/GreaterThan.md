@@ -9,7 +9,7 @@ use Xavante\Conditions\Operators\Comparison\GreaterThan;
 $op = new GreaterThan();
 $op->evaluate(10, 5); // true
 $op->evaluate('b', 'a'); // true
-$op->evaluate(new DateTime('2024-01-02'), new DateTime('2024-01-01')); // true
+$op->evaluate(new DateTime('tomorrow'), new DateTime('yesterday')); // true
 ```
 
 ## Aliases
