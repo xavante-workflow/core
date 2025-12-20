@@ -1,4 +1,4 @@
-# SetVariableValueAction Action
+# SetVariableValueAction
 
 The `SetVariableValueAction` sets a process variable to a specific value. This is useful for initializing, updating, or resetting workflow data.
 

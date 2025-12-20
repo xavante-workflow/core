@@ -1,4 +1,4 @@
-# MakeHttpRequestAction Action
+# MakeHttpRequestAction
 
 The `MakeHttpRequestAction` is a flexible HTTP client action for the Xavante Workflow Engine, built on Guzzle. It supports all HTTP methods, advanced configuration, dry-run simulation, and robust error handling.
 
