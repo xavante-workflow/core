@@ -9,7 +9,7 @@ use Xavante\Conditions\Operators\Comparison\Equals;
 $op = new Equals();
 $op->evaluate(5, 5); // true
 $op->evaluate('foo', 'foo'); // true
-$op->evaluate(new DateTime('2024-01-01'), new DateTime('2024-01-01')); // true
+$op->evaluate(new DateTime('tomorrow'), new DateTime('tomorrow')); // true
 ```
 
 ## Aliases
