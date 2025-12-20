@@ -21,3 +21,5 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
       - name: Run PHPUnit (Unit Tests)
         run: ./vendor/bin/phpunit --testsuite="Unit Tests" --configuration=phpunit.xml
+      - name: Run PHPUnit (Usecase Tests)
+        run: ./vendor/bin/phpunit --testsuite="Use Tests" --configuration=phpunit.xml

@@ -9,6 +9,9 @@
          backupGlobals="false">
     
     <testsuites>
+        <testsuite name="Use Tests">
+            <directory>tests/Integration/UseCases</directory>
+        </testsuite>
         <testsuite name="Simple Workflow Tests">
             <directory>tests/Integration/UseCases/SimpleWorker</directory>
         </testsuite>
