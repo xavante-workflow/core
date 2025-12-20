@@ -61,9 +61,6 @@ $httpAction->configure([
 ### Request Body Options
 
 ```php
-
-// ...existing code...
-
 $httpAction->configure([
     'url' => 'https://api.example.com/users',
     'method' => 'POST',
