@@ -1,18 +1,18 @@
 # MakeHttpRequestAction Action
 
-The `MakeHttpRequestAction` action is a highly customizable HTTP client for the Xavante Workflow Engine, built on top of Guzzle HTTP client. It supports dry-run mode, extensive configuration options, and comprehensive error handling.
+The `MakeHttpRequestAction` is a flexible HTTP client action for the Xavante Workflow Engine, built on Guzzle. It supports all HTTP methods, advanced configuration, dry-run simulation, and robust error handling.
 
 ## Features
 
-- **HTTP Methods**: Support for GET, POST, PUT, DELETE, PATCH, and other HTTP methods
-- **Request Formats**: JSON, form data, raw body, and query parameters
-- **Authentication**: Basic auth, bearer tokens, and custom headers
-- **SSL/TLS**: Configurable SSL verification, client certificates, and custom CA bundles
+- **HTTP Methods**: GET, POST, PUT, DELETE, PATCH, etc.
+- **Request Formats**: JSON, form data, raw body, query params
+- **Authentication**: Basic, bearer, custom headers
+- **SSL/TLS**: Custom CA, client certs, verification toggle
 - **Timeouts**: Connection and request timeouts
-- **Proxy Support**: HTTP and SOCKS proxy configuration
-- **Dry Run Mode**: Simulate requests without actually sending them
+- **Proxy Support**: HTTP/SOCKS proxies
+- **Dry Run Mode**: Simulate requests for testing
 - **Error Handling**: Configurable HTTP error handling
-- **Response Processing**: Easy access to response data, headers, and status codes
+- **Response Processing**: Access to body, headers, status, PSR-7 response
 
 ## Basic Usage
 
@@ -20,17 +20,12 @@ The `MakeHttpRequestAction` action is a highly customizable HTTP client for the 
 use Xavante\Actions\MakeHttpRequestAction;
 
 $httpAction = new MakeHttpRequestAction();
-
-// Configure the request
 $httpAction->configure([
     'url' => 'https://api.example.com/users',
     'method' => 'GET'
 ]);
-
-// Execute the request
 $httpAction->execute();
 
-// Check results
 if ($httpAction->wasSuccessful()) {
     $statusCode = $httpAction->getStatusCode();
     $responseBody = $httpAction->getResponseBody();
@@ -39,6 +34,13 @@ if ($httpAction->wasSuccessful()) {
 }
 ```
 
+## Constructor
+
+```php
+public function __construct(?GuzzleHttp\Client $client = null)
+```
+Optionally inject a custom Guzzle client.
+
 ## Configuration Options
 
 ### Basic Configuration
@@ -46,19 +48,19 @@ if ($httpAction->wasSuccessful()) {
 ```php
 $httpAction->configure([
     'url' => 'https://api.example.com/endpoint',
-    'method' => 'POST',                    // HTTP method
-    'headers' => [                         // Custom headers
+    'method' => 'POST',
+    'headers' => [
         'Authorization' => 'Bearer token',
         'Content-Type' => 'application/json'
     ],
-    'timeout' => 30,                       // Request timeout in seconds
-    'connect_timeout' => 10,               // Connection timeout in seconds
+    'timeout' => 30,
+    'connect_timeout' => 10,
 ]);
 ```
 
 ### Request Body Options
 
-#### JSON Data
+// ...existing code...
 ```php
 $httpAction->configure([
     'url' => 'https://api.example.com/users',
