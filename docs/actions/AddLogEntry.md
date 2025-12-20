@@ -1,4 +1,4 @@
-# AddLogEntryAction Action
+# AddLogEntryAction
 
 The `AddLogEntryAction` appends a message to the process audit log/history. This is useful for tracking workflow progress, debugging, or recording business events.
 

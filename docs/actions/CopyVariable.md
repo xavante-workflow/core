@@ -1,4 +1,4 @@
-# CopyVariableAction Action
+# CopyVariableAction
 
 The `CopyVariableAction` copies the value from one process variable to another. This is useful for data mapping, workflow branching, or variable aliasing.
 

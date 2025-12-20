@@ -18,8 +18,8 @@ jobs:
           extensions: mbstring, xdebug
           coverage: xdebug
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
       - name: Run PHPUnit Unit Tests
         run: ./vendor/bin/phpunit --testsuite="Unit Tests" --configuration=phpunit.xml
       - name: Run PHPUnit Use Case Tests
-        run: ./vendor/bin/phpunit --testsuite="Use Tests" --configuration=phpunit.xml
+        run: ./vendor/bin/phpunit --testsuite="UseCases Tests" --configuration=phpunit.xml
