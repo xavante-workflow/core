@@ -53,6 +53,8 @@ This workflow integrates with three core internal APIs:
 - **Canceled** (final): Payment canceled or voided
 - **Failed** (final): Payment failed after max attempts
 
+![Payment flow diagram](payment-v1.png)
+
 ### Key Variables
 ```json
 {

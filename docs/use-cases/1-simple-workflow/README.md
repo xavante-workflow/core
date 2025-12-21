@@ -28,6 +28,8 @@ This workflow introduces a small, explicit state machine for requests:
 - Guards:
   - approve only if user.role == 'manager'
 
+![Simple approval diagram](simple-approval.png)
+
 ## Reference JSON (instance example)
 ```json
 {

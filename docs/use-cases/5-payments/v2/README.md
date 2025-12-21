@@ -24,6 +24,8 @@ Key Stripe payment intent states include:
 
 ## Workflow Design
 
+![Payment flow design](payment-v2.png)
+
 ### States Definition
 
 | State | Entry Actions | Exit Actions |
