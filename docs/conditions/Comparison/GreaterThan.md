@@ -4,9 +4,10 @@ Checks if the first value is greater than the second. Supports numbers, strings 
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\Comparison\GreaterThan;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new GreaterThan();
+$op = OperatorRegistry::get(OperatorConstants::GREATER_THAN);
 $op->evaluate(10, 5); // true
 $op->evaluate('b', 'a'); // true
 $op->evaluate(new DateTime('tomorrow'), new DateTime('yesterday')); // true

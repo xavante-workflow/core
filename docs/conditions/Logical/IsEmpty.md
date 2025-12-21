@@ -4,9 +4,10 @@ Checks if a value is empty using PHP's `empty()` logic. Returns true for null, '
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\Logical\IsEmpty;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new IsEmpty();
+$op = OperatorRegistry::get(OperatorConstants::IS_EMPTY);
 $op->evaluate('', null); // true
 $op->evaluate([], null); // true
 $op->evaluate('foo', null); // false
