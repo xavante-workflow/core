@@ -4,9 +4,10 @@ Checks if two date values are the same day.
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\Date\IsSameDay;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new IsSameDay();
+$op = OperatorRegistry::get(OperatorConstants::IS_SAME_DAY);
 $op->evaluate('2024-01-01', '2024-01-01'); // true
 $op->evaluate('2024-01-01', '2024-01-02'); // false
 ```

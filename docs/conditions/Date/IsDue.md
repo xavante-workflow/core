@@ -4,9 +4,10 @@ Checks if a date/time value is due (less than or equal to now). Supports DateTim
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\Date\IsDue;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new IsDue();
+$op = OperatorRegistry::get(OperatorConstants::IS_DUE);
 $op->evaluate('2024-01-01 00:00:00', null); // true if date is past or now
 $op->evaluate(new DateTime('-1 day'), null); // true
 ```

@@ -4,9 +4,10 @@ Checks if the first string contains the second string (case-sensitive).
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\String\Contains;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new Contains();
+$op = OperatorRegistry::get(OperatorConstants::CONTAINS);
 $op->evaluate('hello world', 'world'); // true
 $op->evaluate('abc', 'd'); // false
 ```
