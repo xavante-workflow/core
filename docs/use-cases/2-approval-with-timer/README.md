@@ -34,6 +34,8 @@ This workflow augments the simple approval with timers:
 
 ## State Model
 
+![Approval with timer diagram](approval-with-time.png)
+
 ### States
 1. **Draft** (initial)
    - Where approval requests are composed and prepared
