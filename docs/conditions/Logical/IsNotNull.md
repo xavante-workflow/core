@@ -4,9 +4,10 @@ Checks if a value is not null.
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\Logical\IsNotNull;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new IsNotNull();
+$op = OperatorRegistry::get(OperatorConstants::IS_NOT_NULL);
 $op->evaluate('foo', null); // true
 $op->evaluate(null, null); // false
 ```

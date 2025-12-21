@@ -4,9 +4,10 @@ Checks if two values are equal. Supports numbers, strings, and dates. This is th
 
 ## Usage
 ```php
-use Xavante\Conditions\Operators\Comparison\Equals;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new Equals();
+$op = OperatorRegistry::get(OperatorConstants::EQUALS);
 $op->evaluate(5, 5); // true
 $op->evaluate('foo', 'foo'); // true
 $op->evaluate(new DateTime('tomorrow'), new DateTime('tomorrow')); // true
