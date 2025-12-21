@@ -75,9 +75,10 @@ public function evaluate(mixed $value1, mixed $value2): bool
 ## Example: GreaterThan Operator
 
 ```php
-use Xavante\Conditions\Operators\Comparison\GreaterThan;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new GreaterThan();
+$op = OperatorRegistry::get(OperatorConstants::GREATER_THAN);
 $op->evaluate(5, 3); // true
 $op->evaluate('b', 'a'); // true
 $op->evaluate(new DateTime('2024-01-01'), new DateTime('2023-12-31')); // true
@@ -86,9 +87,10 @@ $op->evaluate(new DateTime('2024-01-01'), new DateTime('2023-12-31')); // true
 ## Example: IsEmpty Operator
 
 ```php
-use Xavante\Conditions\Operators\Logical\IsEmpty;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new IsEmpty();
+$op = OperatorRegistry::get(OperatorConstants::IS_EMPTY);
 $op->evaluate('', null); // true
 $op->evaluate('foo', null); // false
 ```
@@ -96,9 +98,10 @@ $op->evaluate('foo', null); // false
 ## Example: Contains Operator
 
 ```php
-use Xavante\Conditions\Operators\String\Contains;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new Contains();
+$op = OperatorRegistry::get(OperatorConstants::CONTAINS);
 $op->evaluate('hello world', 'world'); // true
 $op->evaluate('abc', 'd'); // false
 ```
@@ -106,9 +109,10 @@ $op->evaluate('abc', 'd'); // false
 ## Example: IsDue Operator
 
 ```php
-use Xavante\Conditions\Operators\Date\IsDue;
+use Xavante\Conditions\Operators\OperatorRegistry;
+use Xavante\Conditions\Operators\OperatorConstants;
 
-$op = new IsDue();
+$op = OperatorRegistry::get(OperatorConstants::IS_DUE);
 $op->evaluate('2024-01-01 00:00:00', null); // true if date is past or now
 ```
 
